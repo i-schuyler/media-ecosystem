@@ -8,7 +8,10 @@
 - **Runtime data:** Local databases plus private Google Drive metadata area
 - **Second private metadata repository:** Not part of v1.0.0
 
-## Initial structure
+## Target structure
+
+The repository will grow toward this structure incrementally. Paths that are
+not needed for the current foundation phase are intentionally absent.
 
 ```text
 media-ecosystem/
@@ -61,7 +64,8 @@ Include:
 - foundation decisions
 - privacy and synthetic-fixture policies
 - ADR template
-- CI checks for Markdown, schemas, secrets, and prohibited real-data patterns
+- CI checks for whitespace, required foundation documents, credentials,
+  personal paths, and prohibited tracked files
 
 Do not include production application implementation.
 

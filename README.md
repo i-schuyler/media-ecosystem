@@ -13,6 +13,7 @@ Media Ecosystem is a custom, offline-first, cross-device music player and librar
 - `docs/product/V1_ACCEPTANCE_MATRIX.md`
 - `docs/architecture/FOUNDATION_DECISIONS.md`
 - `docs/implementation/REPO_BOOTSTRAP_PLAN.md`
+- `docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md`
 
 ## Current phase
 
