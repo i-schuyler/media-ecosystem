@@ -1,0 +1,77 @@
+name: Foundation guardrails
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  repository-guardrails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Check whitespace
+        run: git diff --check HEAD^
+
+      - name: Reject prohibited tracked files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          prohibited="$(
+            git ls-files |
+              grep -Ei '\.(mp3|flac|m4a|aac|ogg|oga|wav|aiff|aif|alac|wma|opus|mp4|mkv|webm|db|sqlite|sqlite3|p12|pfx|pem|key)$' |
+              grep -Ev '^fixtures/synthetic-library/' || true
+          )"
+
+          if [[ -n "$prohibited" ]]; then
+            echo "Prohibited files are tracked:"
+            echo "$prohibited"
+            exit 1
+          fi
+
+      - name: Reject known personal configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          matches="$(
+            git grep -InE \
+              'schuyler\.sync@gmail\.com|C:\\Users\\schuy|/storage/emulated/0/Documents/HeartloomVault' \
+              -- . || true
+          )"
+
+          if [[ -n "$matches" ]]; then
+            echo "Known personal configuration found:"
+            echo "$matches"
+            exit 1
+          fi
+
+      - name: Require foundation documents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required=(
+            README.md
+            docs/product/Media_Ecosystem_v1.0.0_DoD.md
+            docs/product/ROADMAP_v1.md
+            docs/product/V1_ACCEPTANCE_MATRIX.md
+            docs/architecture/FOUNDATION_DECISIONS.md
+            docs/implementation/REPO_BOOTSTRAP_PLAN.md
+            docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md
+          )
+
+          for path in "${required[@]}"; do
+            if [[ ! -s "$path" ]]; then
+              echo "Required document missing or empty: $path"
+              exit 1
+            fi
+          done
