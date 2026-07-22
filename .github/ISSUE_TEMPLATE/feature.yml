@@ -1,0 +1,31 @@
+name: Feature
+description: Propose work tied to the product contract
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the user-visible outcome.
+    validations:
+      required: true
+
+  - type: input
+    id: dod
+    attributes:
+      label: Related DoD section
+      placeholder: "For example: Section 10 — Play count and total played time"
+
+  - type: input
+    id: acceptance
+    attributes:
+      label: Related acceptance IDs
+      placeholder: "For example: STAT-02"
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and edge cases
+      description: Include identity, sync, deletion, restore, privacy, and migration risks.

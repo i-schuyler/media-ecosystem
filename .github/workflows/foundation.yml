@@ -1,0 +1,36 @@
+name: Foundation guardrails
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  repository-guardrails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Run foundation guardrails
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            diff_range="${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}"
+          elif git cat-file -e "${{ github.event.before }}^{commit}" 2>/dev/null; then
+            diff_range="${{ github.event.before }}..${{ github.sha }}"
+          else
+            empty_tree="$(git hash-object -t tree /dev/null)"
+            diff_range="${empty_tree}..${{ github.sha }}"
+          fi
+
+          bash .github/scripts/check-foundation.sh "$diff_range"

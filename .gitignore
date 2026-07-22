@@ -1,0 +1,85 @@
+# Operating systems
+.DS_Store
+Thumbs.db
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+credentials*.json
+oauth*.json
+token*.json
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases and runtime state
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+runtime/
+local-data/
+sync-state/
+trash/
+backups/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+.cache/
+*.tmp
+*.bak
+
+# Build outputs
+build/
+dist/
+out/
+target/
+.gradle/
+.cxx/
+.externalNativeBuild/
+
+# Android
+local.properties
+*.apk
+*.aab
+captures/
+.externalNativeBuild/
+
+# Windows / .NET
+bin/
+obj/
+*.user
+*.suo
+
+# Real media files must never enter the repository
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.oga
+*.wav
+*.aiff
+*.aif
+*.alac
+*.wma
+*.opus
+*.mp4
+*.mkv
+*.webm
+
+# A future synthetic fixture policy may explicitly allow tiny,
+# generated or redistributable files under this directory.
+!fixtures/synthetic-library/**
