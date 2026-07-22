@@ -1,8 +1,8 @@
 # Media Ecosystem
 
-**Status:** Experimental pre-alpha planning  
-**Target:** v1.0.0  
-**Platforms:** Android and Windows 11
+- **Status:** Experimental pre-alpha planning
+- **Target:** v1.0.0
+- **Platforms:** Android and Windows 11
 
 Media Ecosystem is a custom, offline-first, cross-device music player and library system. It keeps ordinary audio files browseable in normal file explorers while synchronizing playlists, ratings, listening statistics, resume positions, device availability, and deterministic file operations.
 
