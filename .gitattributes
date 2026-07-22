@@ -1,0 +1,5 @@
+* text=auto
+
+# Markdown permits trailing spaces for explicit hard line breaks, matching
+# .editorconfig. Other whitespace errors remain subject to Git's defaults.
+*.md text eol=lf whitespace=-trailing-space
