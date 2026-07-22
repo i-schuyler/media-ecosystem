@@ -5,17 +5,19 @@
 - **Name:** `media-ecosystem`
 - **Visibility:** Public
 - **Posture:** Low-attention experimental pre-alpha
+- **License:** Apache-2.0
 - **Runtime data:** Local databases plus private Google Drive metadata area
 - **Second private metadata repository:** Not part of v1.0.0
 
-## Target structure
+## Current foundation structure
 
-The repository will grow toward this structure incrementally. Paths that are
-not needed for the current foundation phase are intentionally absent.
+The repository contains the Phase 0 contract, contribution guidance, planning
+process, and guardrails. Application directories remain intentionally absent.
 
 ```text
 media-ecosystem/
 ├── README.md
+├── AGENTS.md
 ├── LICENSE
 ├── SECURITY.md
 ├── CONTRIBUTING.md
@@ -24,23 +26,24 @@ media-ecosystem/
 ├── .gitattributes
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
+│   │   └── capability-spike.yml
 │   ├── pull_request_template.md
+│   ├── scripts/check-foundation.sh
 │   └── workflows/
 ├── docs/
 │   ├── product/
 │   ├── architecture/adr/
 │   ├── implementation/
+│   │   ├── CAPABILITY_SPIKE_PROTOCOL.md
+│   │   ├── PHASE_1_CAPABILITY_ISSUES.md
+│   │   └── SUPPORTED_TEST_DEVICE_MATRIX.md
 │   └── privacy/
-├── fixtures/synthetic-library/
-├── schemas/
-├── core/
-├── cli/
-├── apps/android/
-├── apps/windows/
-└── tools/
 ```
 
-The implementation directories remain provisional until the architecture spike is complete.
+Future fixture, schema, core, CLI, application, and tooling paths are created
+only when their Phase 1 evidence or later implementation slice needs them. The
+implementation directories and production stack remain undecided until the
+capability proofs and stack-selection ADR are complete.
 
 ## Guardrails
 
@@ -51,11 +54,11 @@ The implementation directories remain provisional until the architecture spike i
 - No feature may delete outside a registered Media Ecosystem root.
 - Pull requests affecting identity, synchronization, deletion, or migration require explicit invariant tests.
 
-## First pull request
+## Foundation baseline
 
 **Title:** `Establish Media Ecosystem v1 product contract and repository guardrails`
 
-Include:
+The merged foundation baseline includes:
 
 - README
 - v1.0.0 DoD
@@ -67,10 +70,18 @@ Include:
 - CI checks for whitespace, required foundation documents, credentials,
   personal paths, and prohibited tracked files
 
-Do not include production application implementation.
+It does not include production application implementation.
 
-## Second pull request
+## Phase 0 completion slice
 
-**Title:** `Prove cross-platform media and storage capabilities`
+The completion slice adds Apache-2.0 licensing, durable agent guidance, the
+supported-device matrix, capability-spike protocol, canonical Phase 1 issue
+catalog and issue form, aligned guardrails, and corresponding GitHub planning
+objects.
 
-Contain isolated capability spikes and a final stack-selection ADR. Do not commit to production architecture until the required Android, Windows, playback, storage, identity, configuration, and event-model proofs pass.
+## Phase 1 work
+
+Phase 1 contains isolated capability spikes followed by a stack-comparison
+ADR. Do not commit to production architecture until the required Android,
+Windows, playback, storage, identity, configuration, durability, event-model,
+and hashing proofs are complete.

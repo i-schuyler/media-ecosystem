@@ -54,12 +54,17 @@ fi
 
 required=(
   README.md
+  LICENSE
+  AGENTS.md
   docs/product/Media_Ecosystem_v1.0.0_DoD.md
   docs/product/ROADMAP_v1.md
   docs/product/V1_ACCEPTANCE_MATRIX.md
   docs/architecture/FOUNDATION_DECISIONS.md
   docs/architecture/adr/0000-template.md
   docs/implementation/REPO_BOOTSTRAP_PLAN.md
+  docs/implementation/SUPPORTED_TEST_DEVICE_MATRIX.md
+  docs/implementation/CAPABILITY_SPIKE_PROTOCOL.md
+  docs/implementation/PHASE_1_CAPABILITY_ISSUES.md
   docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md
 )
 
@@ -69,5 +74,13 @@ for path in "${required[@]}"; do
     exit 1
   fi
 done
+
+apache_license_sha256="c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+actual_license_sha256="$(sha256sum LICENSE | cut -d ' ' -f 1)"
+
+if [[ "$actual_license_sha256" != "$apache_license_sha256" ]]; then
+  echo "LICENSE is not the complete canonical Apache License 2.0 text."
+  exit 1
+fi
 
 echo "Foundation guardrails passed."

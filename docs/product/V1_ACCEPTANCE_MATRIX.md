@@ -1,5 +1,10 @@
 # Media Ecosystem v1.0.0 Acceptance Matrix
 
+The [Phase 1 capability issue catalog](../implementation/PHASE_1_CAPABILITY_ISSUES.md)
+maps proof work to these acceptance IDs. Planning or completing a spike does
+not by itself mark an acceptance condition as passed; evidence must cover the
+documented validation matrix and release environment.
+
 | ID | Area | Acceptance condition |
 |---|---|---|
 | ID-01 | Track identity | Rename, move, retag, transcode, and explicit media replacement preserve Track ID. |
@@ -11,6 +16,7 @@
 | PB-02 | Background | Android playback continues screen-off and exposes media controls. |
 | PB-03 | Queue | Queue, current track, position, shuffle, and repeat survive restart. |
 | PB-04 | Clear Queue | Clear Queue works and Undo restores the prior queue. |
+| PB-05 | Windows controls | Windows playback exposes working system media controls. |
 | RP-01 | Resume lower bound | A saved position below 60 seconds does not prompt under defaults. |
 | RP-02 | Resume upper bound | A saved position within the final 120 seconds does not prompt under defaults. |
 | RP-03 | Resume sync | A meaningful position becomes available on another device after sync. |

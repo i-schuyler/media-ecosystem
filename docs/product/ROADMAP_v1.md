@@ -6,15 +6,35 @@ Build in large, reviewable vertical slices. Each slice must leave the repository
 
 ## Phase 0 — Product and repository foundation
 
-- Merge the frozen DoD, foundation decisions, roadmap, and acceptance matrix.
-- Create the public experimental repository.
-- Choose a license before calling the project open source.
-- Add privacy and synthetic-data guardrails.
-- Establish issue, PR, ADR, CI, and release conventions.
+**Status:** The initial contract and guardrail baseline is merged. The Phase 0
+completion slice is in progress; Phase 1 proof work has not begun.
 
-**Exit:** Product contract is versioned; CI uses synthetic data only; no application code is required.
+Completed baseline:
+
+- Frozen DoD, foundation decisions, roadmap, and acceptance matrix
+- Public experimental repository
+- Privacy and synthetic-data guardrails
+- Issue, PR, ADR, and CI conventions
+
+Phase 0 completion slice:
+
+- Adopt Apache-2.0 and document contribution licensing
+- Add durable repository agent instructions
+- Define the supported test-device matrix and capability-spike protocol
+- Publish the canonical Phase 1 issue catalog, issue form, milestones, labels,
+  and planning issues
+- Require the expanded foundation documents in CI
+
+**Exit:** The completion slice is merged, its planning objects exist, the
+product contract remains versioned, and CI uses synthetic data only. No
+application code is required.
 
 ## Phase 1 — Technical proof-of-capability
+
+**Status:** Upcoming. Follow the
+[capability-spike protocol](../implementation/CAPABILITY_SPIKE_PROTOCOL.md),
+[test-device matrix](../implementation/SUPPORTED_TEST_DEVICE_MATRIX.md), and
+[canonical issue catalog](../implementation/PHASE_1_CAPABILITY_ISSUES.md).
 
 Prove the highest-risk capabilities before choosing the production stack:
 
@@ -23,11 +43,11 @@ Prove the highest-risk capabilities before choosing the production stack:
 - Windows playback and media controls
 - Playback of all required Bandcamp formats on both platforms
 - Portable path normalization
-- Stable Track, Folder, Device, and File Instance IDs
+- Stable Track, Folder, and File Instance ID sidecar round trips
 - Atomic state snapshots and recovery
 - Idempotent events under clock skew
 - Practical full-file hashing performance
-- Human-editable config validation
+- Candidate-stack comparison, including human-editable config validation
 
 **Exit:** An Architecture Decision Record selects the stack based on evidence.
 
