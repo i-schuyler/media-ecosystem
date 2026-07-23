@@ -7,10 +7,11 @@
   interfaces; Duplicate detection; File operations.
 - **Related acceptance IDs:** ID-01, ID-02, ID-03, PL-01.
 - **Platform and exact environment:** VPS baseline as previously recorded;
-  plus Samsung Galaxy Tab S10 FE 5G, Android 16 build
+  Samsung Galaxy Tab S10 FE 5G, Android 16 build
   `BP4A.251205.006.X528USQU9CZE9`, aarch64, Python 3.14.6 in Termux, F2FS
   private storage and Android-exposed portable-SD FUSE storage; 2026-07-22
-  local time. Windows was not executed.
+  local time; plus Microsoft Surface Book 3, Windows 11 Pro 25H2 build
+  `26200.8894`, 64-bit NTFS, CPython 3.14.3; 2026-07-23 local time.
 - **Candidate approach:** Versioned UTF-8 JSON with UUID identifiers, canonical
   logical paths, device binding for file instances, optional expected SHA-256
   evidence, preserved extension and unknown fields, duplicate-key rejection,
@@ -39,9 +40,10 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 
 ## Results and measurements
 
-- Evidence level: **Proven on VPS and executed on Android internal storage** for
-  the sidecar invariant/failure harness; **normal replacement behavior observed
-  on Android internal and portable-SD storage**; Windows remains pending.
+- Evidence level: **Proven on the reference model and executed on Android
+  internal storage and Windows** for the sidecar invariant/failure harness;
+  normal replacement behavior observed on Android internal/portable-SD
+  storage and Windows internal NTFS.
 - File and folder documents serialized deterministically and round-tripped all
   IDs without mutation.
 - Rename/move and changed expected content preserved immutable IDs. Two
@@ -60,6 +62,13 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
   Termux-private F2FS storage, including the sidecar cases. On the removable
   FUSE mount, the same normal-process primitive needed for sidecar promotion,
   `os.replace()`, successfully replaced deterministic synthetic content.
+- The Windows final run passed every sidecar test other than the existing
+  Windows-only directory-symlink construction skip. Track, Folder, File
+  Instance, and Device IDs round-tripped without mutation; rename/move,
+  intended copies, duplicate review, unknown fields, malformed/missing
+  evidence, atomic interruption, and explicit replacement behaved identically
+  to the reference expectations. Non-elevated NTFS file `fsync()` and
+  `os.replace()` returned successfully.
 - The target observations are detailed in the
   [Android internal](android-internal-storage.md) and
   [portable-SD](android-portable-sd-storage.md) evidence reports.
@@ -68,13 +77,13 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** Successful Android `os.replace` observations do not
-  prove crash, controller, or power-loss durability, and Windows behavior is
-  still untested. This proof does not exercise
+- **Known limitations:** Successful Android and Windows `os.replace`
+  observations do not prove crash, controller, or power-loss durability. This
+  proof does not exercise
   embedded audio tags, every required format, real scan/reconciliation, or a
-  production database. Windows directory flush is not implemented by this
-  candidate. Duplicate Track ID detection surfaces review; it does not choose
-  a retained file.
+  production database. Windows directory `fsync()` was unavailable through
+  the measured Python API. Duplicate Track ID detection surfaces review; it
+  does not choose a retained file.
 - **Security observations:** Duplicate keys and unsupported versions fail
   closed; parent resolution includes symlink containment; no operation accepts
   an outside target; malformed evidence never creates an identity.
@@ -85,13 +94,15 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 - **Production suitability:** Not established; the schema is deliberately
   experimental and disposable.
 - **Disposition:** **retain for comparison**.
-- **Required target-device follow-up:** Run the unified suite and filesystem
-  observations on Windows 11; add safe Android interruption/power-loss evidence
-  where practical; and separately prove safe embedded-tag behavior per required
-  audio format before a sidecar/embedded-ID ADR.
+- **Required target-device follow-up:** Add safe crash/power-loss evidence
+  where practical through issue #8, and separately prove safe embedded-tag
+  behavior per required audio format before a sidecar/embedded-ID ADR.
 - **ADR implications:** A later identity ADR must decide schema evolution,
   embedded-tag policy, directory durability, duplicate review, and target
   filesystem behavior. This report does not make those decisions.
 
-Issue #7 is partially evidenced and remains open while Windows and
-crash-durability evidence remain pending.
+Issue #7's existing exit criteria are evidenced across the recorded Android
+and Windows runs: all three identity types round-trip, rename/move preserve
+identity, and ambiguous/missing/invalid evidence never assigns silently. The
+issue may close. Crash durability and embedded-tag policy remain explicitly
+separate follow-up rather than reasons to rewrite these exit criteria.

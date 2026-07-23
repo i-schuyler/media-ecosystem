@@ -1,0 +1,160 @@
+{
+  "capture": {
+    "after_utc": "2026-07-23T21:58:30.8425134Z",
+    "before_utc": "2026-07-23T21:57:54.4875695Z",
+    "duration_seconds": 36.354944,
+    "raw_file_count": 45
+  },
+  "environment": {
+    "collector_process": {
+      "architecture": "X64",
+      "elevated": true,
+      "is_64_bit": true
+    },
+    "device": {
+      "manufacturer": "Microsoft Corporation",
+      "model": "Surface Book 3"
+    },
+    "locale": {
+      "culture": "en-US",
+      "filesystem_encoding": "utf-8",
+      "installed_ui_culture": "en-US",
+      "locale_encoding": "cp1252",
+      "ui_culture": "en-US"
+    },
+    "non_elevated_storage_process": {
+      "architecture": "AMD64",
+      "elevated": false
+    },
+    "powershell": {
+      "clr_version": "4.0.30319.42000",
+      "edition": "Desktop",
+      "version": "5.1.26100.8894"
+    },
+    "python": {
+      "exact_runtime": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+      "launcher_file_version": "3.13.14"
+    },
+    "storage": {
+      "available_bytes_after": 224886128640,
+      "available_bytes_before": 224886382592,
+      "capacity_bytes": 1022389907456,
+      "filesystem": "NTFS",
+      "probe_and_system_volume_same": true
+    },
+    "windows": {
+      "build": "26200.8894",
+      "caption": "Microsoft Windows 11 Pro",
+      "display_version": "25H2",
+      "edition_id": "Professional",
+      "installation_type": "Client",
+      "os_architecture": "64-bit",
+      "registry_product_name": "Windows 10 Pro",
+      "version": "10.0.26200"
+    }
+  },
+  "power_and_thermal": {
+    "after": {
+      "battery_charge_status": "High",
+      "battery_life_percent": 100,
+      "power_line_status": "Online",
+      "win32_batteries": [
+        {
+          "availability": 2,
+          "battery_status": 2,
+          "design_voltage_millivolts": 8066,
+          "estimated_charge_remaining_percent": 100,
+          "estimated_run_time_minutes_raw": 71582788,
+          "status": "OK"
+        },
+        {
+          "availability": 2,
+          "battery_status": 2,
+          "design_voltage_millivolts": 12169,
+          "estimated_charge_remaining_percent": 100,
+          "estimated_run_time_minutes_raw": 71582788,
+          "status": "OK"
+        }
+      ]
+    },
+    "before": {
+      "battery_charge_status": "High",
+      "battery_life_percent": 100,
+      "power_line_status": "Online",
+      "win32_batteries": [
+        {
+          "availability": 2,
+          "battery_status": 2,
+          "design_voltage_millivolts": 8066,
+          "estimated_charge_remaining_percent": 100,
+          "estimated_run_time_minutes_raw": 71582788,
+          "status": "OK"
+        },
+        {
+          "availability": 2,
+          "battery_status": 2,
+          "design_voltage_millivolts": 12168,
+          "estimated_charge_remaining_percent": 100,
+          "estimated_run_time_minutes_raw": 71582788,
+          "status": "OK"
+        }
+      ]
+    },
+    "thermal": {
+      "acpi_query_returned_record": true,
+      "acpi_record_fields_all_zero_before_and_after": true,
+      "battery_temperature_available": false,
+      "usable_temperature_available": false
+    },
+    "wmi_battery_status_available": false
+  },
+  "provenance": {
+    "harness_commit": "664124dbd3cce9d6049b0381d6bb16540b5bb6e1",
+    "non_elevated_bundle_manifest_sha256": "a48db9fb3667febdd3e8f00392724abceb042923f52cc347934c8f06ebd0b7af",
+    "raw_manifest_sha256": "9c9c2a2f3de5fe0a4cc3ef967e74f9307001d1b133320b671fac8640658c44fb",
+    "raw_zip_sha256": "d8e6be2f53662067ae369de6a76c33a4c53e743eb5a26908335d3edca0a3694a"
+  },
+  "schema_version": 1,
+  "tests": {
+    "cancellation": {
+      "command_duration_seconds": 4.014629,
+      "result": "passed",
+      "worker_exit_code": 130
+    },
+    "events": [
+      {
+        "command_duration_seconds": 2.224663,
+        "iterations": 100,
+        "result": "passed",
+        "seed": 7
+      },
+      {
+        "command_duration_seconds": 1.57947,
+        "iterations": 100,
+        "result": "passed",
+        "seed": 20260723
+      }
+    ],
+    "hash_benchmark": {
+      "command_duration_seconds": 9.184032,
+      "measurement_count": 12,
+      "repeat_digests_equal": true
+    },
+    "non_elevated_storage_probe": {
+      "command_duration_seconds": 1.26758,
+      "result": "passed"
+    },
+    "shared_core_verify": {
+      "command_duration_seconds": 5.220881,
+      "event_seeds": [
+        7,
+        20260723
+      ],
+      "passed": 45,
+      "result": "passed",
+      "skipped": 1,
+      "skipped_test": "test_symlink_parent_cannot_escape_registered_root",
+      "test_count": 46
+    }
+  }
+}

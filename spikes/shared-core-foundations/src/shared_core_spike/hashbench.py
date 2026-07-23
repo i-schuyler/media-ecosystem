@@ -5,22 +5,33 @@ from __future__ import annotations
 from datetime import datetime, timezone
 import hashlib
 import json
+import multiprocessing
 import os
 from pathlib import Path
 import platform
+import shutil
 import tempfile
 import time
 from typing import Any
+import uuid
 
 
 ALGORITHM = "sha256"
 DEFAULT_CHUNK_SIZE = 1024 * 1024
 MISSING_OBSERVATION = "not captured by this benchmark"
 PLATFORM_KINDS = {"android", "vps", "windows", "other"}
+CANCELLATION_PREFIX = "media-ecosystem-hash-cancellation-"
+CANCELLATION_EXIT_CODE = 130
 
 
 class BenchmarkError(RuntimeError):
     pass
+
+
+class CancellationProbeError(BenchmarkError):
+    def __init__(self, message: str, disposable_child: str):
+        super().__init__(message)
+        self.disposable_child = disposable_child
 
 
 def generate_synthetic(path: Path, size_bytes: int, chunk_size: int = DEFAULT_CHUNK_SIZE) -> None:
@@ -46,6 +57,63 @@ def stream_hash(path: Path, chunk_size: int = DEFAULT_CHUNK_SIZE) -> str:
         while chunk := stream.read(chunk_size):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _process_peak_working_set() -> dict[str, Any]:
+    if os.name != "nt":
+        return {
+            "available": False,
+            "reason": "peak process working set is collected by this harness on Windows only",
+        }
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        class ProcessMemoryCounters(ctypes.Structure):
+            _fields_ = [
+                ("cb", wintypes.DWORD),
+                ("PageFaultCount", wintypes.DWORD),
+                ("PeakWorkingSetSize", ctypes.c_size_t),
+                ("WorkingSetSize", ctypes.c_size_t),
+                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                ("PagefileUsage", ctypes.c_size_t),
+                ("PeakPagefileUsage", ctypes.c_size_t),
+            ]
+
+        counters = ProcessMemoryCounters()
+        counters.cb = ctypes.sizeof(counters)
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        psapi = ctypes.WinDLL("psapi", use_last_error=True)
+        kernel32.GetCurrentProcess.argtypes = []
+        kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+        psapi.GetProcessMemoryInfo.argtypes = [
+            wintypes.HANDLE,
+            ctypes.POINTER(ProcessMemoryCounters),
+            wintypes.DWORD,
+        ]
+        psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+        process = kernel32.GetCurrentProcess()
+        succeeded = psapi.GetProcessMemoryInfo(
+            process, ctypes.byref(counters), counters.cb
+        )
+        if not succeeded:
+            return {
+                "available": False,
+                "reason": "GetProcessMemoryInfo returned failure",
+            }
+        return {
+            "available": True,
+            "bytes": int(counters.PeakWorkingSetSize),
+            "metric": "PeakWorkingSetSize for the benchmark process",
+        }
+    except (AttributeError, OSError, TypeError, ValueError) as error:
+        return {
+            "available": False,
+            "reason": f"Windows peak working-set query failed: {type(error).__name__}",
+        }
 
 
 def correctness_probe(size_bytes: int = 256 * 1024, chunk_size: int = 64 * 1024) -> dict[str, Any]:
@@ -135,6 +203,19 @@ def benchmark(
                     }
                 )
             path.unlink()
+    memory_measurement = _process_peak_working_set()
+    observations = resource_observations or {
+        "cpu": "process CPU time recorded per run; utilization not instrumented",
+        "memory": MISSING_OBSERVATION,
+        "battery_or_power": MISSING_OBSERVATION,
+        "thermal": MISSING_OBSERVATION,
+        "cancellation": MISSING_OBSERVATION,
+    }
+    if memory_measurement["available"] and observations.get("memory") == MISSING_OBSERVATION:
+        observations = dict(observations)
+        observations["memory"] = (
+            "peak process working set recorded in resource_measurements"
+        )
     return {
         "schema_version": 2,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
@@ -147,16 +228,169 @@ def benchmark(
         ),
         "generator": "deterministic repeated SHA-256 seed bytes, streamed to a temporary file",
         "identity_warning": "A full-file hash is integrity evidence and is never a logical Track ID.",
-        "resource_observations": resource_observations
-        or {
-            "cpu": "process CPU time recorded per run; utilization not instrumented",
-            "memory": MISSING_OBSERVATION,
-            "battery_or_power": MISSING_OBSERVATION,
-            "thermal": MISSING_OBSERVATION,
-            "cancellation": MISSING_OBSERVATION,
+        "resource_observations": observations,
+        "resource_measurements": {
+            "peak_process_working_set": memory_measurement,
         },
         "measurements": measurements,
     }
+
+
+def _validate_work_root(work_root: Path) -> Path:
+    try:
+        resolved = work_root.expanduser().resolve(strict=True)
+    except OSError as error:
+        raise CancellationProbeError(
+            "cancellation work root must exist and be accessible", "not-created"
+        ) from error
+    repository_root = Path(__file__).resolve().parents[4]
+    if not resolved.is_dir():
+        raise CancellationProbeError(
+            "cancellation work root must be a directory", "not-created"
+        )
+    if resolved == Path(resolved.anchor):
+        raise CancellationProbeError(
+            "filesystem roots are not valid cancellation work roots", "not-created"
+        )
+    if resolved == Path.home().resolve():
+        raise CancellationProbeError(
+            "the user home directory is not a valid cancellation work root",
+            "not-created",
+        )
+    if resolved == repository_root:
+        raise CancellationProbeError(
+            "the repository root is not a valid cancellation work root",
+            "not-created",
+        )
+    return resolved
+
+
+def _cancellation_worker(
+    path: Path,
+    final_artifact: Path,
+    ready: Any,
+    cancel: Any,
+    size_bytes: int,
+    chunk_size: int,
+    operation_timeout_seconds: float,
+) -> None:
+    generate_synthetic(path, size_bytes, chunk_size)
+    ready.set()
+    started = time.perf_counter()
+    while time.perf_counter() - started < operation_timeout_seconds:
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            while chunk := stream.read(chunk_size):
+                if cancel.is_set():
+                    raise SystemExit(CANCELLATION_EXIT_CODE)
+                digest.update(chunk)
+    atomic_output(
+        final_artifact,
+        json.dumps(
+            {
+                "result": "completed",
+                "digest": digest.hexdigest(),
+            },
+            sort_keys=True,
+        )
+        + "\n",
+    )
+
+
+def cancellation_probe(
+    *,
+    work_root: Path,
+    size_bytes: int = 64 * 1024 * 1024,
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
+    cancel_after_seconds: float = 0.5,
+    operation_timeout_seconds: float = 120.0,
+) -> dict[str, Any]:
+    """Cancel a long synthetic hash worker and verify fail-clean behavior."""
+
+    if size_bytes < 1 or chunk_size < 1:
+        raise CancellationProbeError(
+            "size and chunk size must be positive", "not-created"
+        )
+    if cancel_after_seconds <= 0 or operation_timeout_seconds <= cancel_after_seconds:
+        raise CancellationProbeError(
+            "cancellation timing must be positive and shorter than the operation timeout",
+            "not-created",
+        )
+    root = _validate_work_root(work_root)
+    disposable = Path(tempfile.mkdtemp(prefix=CANCELLATION_PREFIX, dir=root))
+    if disposable.parent != root or disposable.resolve() != disposable:
+        raise CancellationProbeError(
+            "cancellation probe directory escaped the selected root",
+            disposable.name,
+        )
+    synthetic_path = disposable / "synthetic.bin"
+    final_artifact = disposable / f"completed-{uuid.uuid4().hex}.json"
+    context = multiprocessing.get_context("spawn")
+    ready = context.Event()
+    cancel = context.Event()
+    process = context.Process(
+        target=_cancellation_worker,
+        args=(
+            synthetic_path,
+            final_artifact,
+            ready,
+            cancel,
+            size_bytes,
+            chunk_size,
+            operation_timeout_seconds,
+        ),
+    )
+    wall_start = time.perf_counter()
+    try:
+        process.start()
+        if not ready.wait(timeout=30):
+            process.terminate()
+            process.join(timeout=10)
+            raise CancellationProbeError(
+                "hash worker did not become ready", disposable.name
+            )
+        time.sleep(cancel_after_seconds)
+        cancel.set()
+        process.join(timeout=30)
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=10)
+            raise CancellationProbeError(
+                "hash worker did not honor cancellation", disposable.name
+            )
+        elapsed = time.perf_counter() - wall_start
+        temporary_files = sorted(path.name for path in disposable.iterdir())
+        final_exists = final_artifact.exists()
+        if process.exitcode != CANCELLATION_EXIT_CODE or final_exists:
+            raise CancellationProbeError(
+                "cancellation worker reported an unexpected exit or final artifact",
+                disposable.name,
+            )
+        shutil.rmtree(disposable)
+        return {
+            "schema_version": 1,
+            "probe": "automated-hash-cancellation",
+            "result": "passed",
+            "synthetic_size_bytes": size_bytes,
+            "chunk_size_bytes": chunk_size,
+            "cancel_after_seconds": cancel_after_seconds,
+            "operation_timeout_seconds": operation_timeout_seconds,
+            "wall_seconds": round(elapsed, 6),
+            "worker_exit_code": process.exitcode,
+            "expected_cancellation_exit_code": CANCELLATION_EXIT_CODE,
+            "finalized_artifact_reported": False,
+            "finalized_artifact_exists": False,
+            "temporary_files_before_cleanup": temporary_files,
+            "cleanup": {
+                "passed": not disposable.exists(),
+                "disposable_root_removed": not disposable.exists(),
+            },
+        }
+    except BaseException:
+        if process.is_alive():
+            process.terminate()
+            process.join(timeout=10)
+        raise
 
 
 def render_markdown(result: dict[str, Any]) -> str:
@@ -216,9 +450,22 @@ def render_markdown(result: dict[str, Any]) -> str:
                 )
                 if key in result["resource_observations"]
             ],
-            "",
         ]
     )
+    peak = result.get("resource_measurements", {}).get(
+        "peak_process_working_set"
+    )
+    if peak:
+        if peak.get("available"):
+            lines.append(
+                f"- Peak Process Working Set: {peak['bytes']} bytes "
+                f"({peak['metric']})"
+            )
+        else:
+            lines.append(
+                f"- Peak Process Working Set: unavailable ({peak['reason']})"
+            )
+    lines.append("")
     return "\n".join(lines)
 
 

@@ -17,9 +17,9 @@ and has a supported Windows 11 distribution. Its standard library supplies
 Unicode normalization, JSON, UUIDs, checksums, temporary directories, atomic
 rename primitives, and tests, so the harness has no third-party dependencies.
 The recorded VPS experimental baseline is CPython 3.12.13. The Android evidence
-also records a successful CPython 3.14.6 run. Target runs must record the exact
-version; this compatibility observation does not turn either version into a
-production runtime requirement.
+records a successful CPython 3.14.6 run, and the Windows evidence records
+CPython 3.14.3. Target runs must record the exact version; these compatibility
+observations do not turn any version into a production runtime requirement.
 
 This is a convenience choice for reproducible experimentation only. It does
 not select the application language, shared-core packaging, persistence layer,
@@ -110,6 +110,9 @@ py -3 .\spikes\shared-core-foundations\scripts\harness.py hash-benchmark `
   --sizes-mib 1,16,64,256 --repeats 3 --chunk-mib 1 `
   --device-label windows-surface-book-3 `
   --platform windows `
+  --os-label "Microsoft Windows 11 Pro <version/build>" `
+  --architecture "64-bit OS; X64 process" `
+  --runtime-label "Python <exact-version>" `
   --json-output .\spikes\shared-core-foundations\results\local-windows-sha256.json `
   --markdown-output .\spikes\shared-core-foundations\results\local-windows-sha256.md
 ```
@@ -143,6 +146,30 @@ all runs succeed. `Ctrl+C` may stop the run without modifying tracked evidence.
 A digest is integrity evidence; it is never used as a Track ID or as automatic
 logical-identity evidence.
 
+On Windows, the benchmark also records `PeakWorkingSetSize` for the benchmark
+process through `GetProcessMemoryInfo`. Unsupported resource APIs remain
+explicitly unavailable rather than fabricated. The committed Windows result
+is under `results/windows-internal-sha256.*`.
+
+## Automated cancellation proof
+
+The cancellation proof starts a bounded child process, generates a synthetic
+file under an explicit safe work parent, begins a long repeated hash operation,
+requests cancellation after a deterministic interval, verifies worker exit
+`130`, verifies that no final artifact exists, and removes the unique
+disposable child:
+
+```powershell
+py -3 .\spikes\shared-core-foundations\scripts\harness.py hash-cancellation `
+  --work-root "<dedicated-local-app-data-probe-parent>" `
+  --size-mib 64 --chunk-mib 1 --cancel-after-seconds 0.5
+```
+
+The operation timeout is deliberately much longer than the cancellation
+interval, so a successful result proves cancellation handling rather than
+normal completion. A failed or interrupted proof identifies its disposable
+child instead of touching unrelated data.
+
 ## Safe storage capability probe
 
 The storage probe is a separate, explicit target command. It is not included in
@@ -158,10 +185,11 @@ python3 spikes/shared-core-foundations/scripts/harness.py storage-probe \
 ```
 
 Choose the explicit context from `termux-private-internal`,
-`android-shared-internal`, `portable-sd-raw-path`, or `app-saf`. These names
-deliberately distinguish Termux-private storage, Android shared internal
-storage, raw mounted-card access, and a future app-level Storage Access
-Framework run. Raw-path success is not evidence of persisted SAF permission.
+`android-shared-internal`, `portable-sd-raw-path`, `app-saf`, or
+`windows-internal`. These names deliberately distinguish Termux-private
+storage, Android shared internal storage, raw mounted-card access, a future
+app-level Storage Access Framework run, and Windows internal storage. Raw-path
+success is not evidence of persisted SAF permission.
 
 The selected root is used only as a parent. The probe refuses a filesystem
 root, the user's home directory, and the repository root; creates a uniquely
@@ -173,6 +201,26 @@ Unavailable filesystem capabilities are observations rather than automatic
 product failures. On success the child is removed. On failure or interruption,
 stderr identifies its sanitized child name so it can be removed manually from
 the already known selected root.
+
+On Windows the probe additionally records NFC-equivalent name coexistence,
+trailing dot/space behavior, 255/256-character components, and one bounded path
+beyond 260 characters. It does not physically open Win32 reserved device
+aliases; the shared path corpus rejects them before filesystem access.
+
+## Windows raw-evidence collector
+
+`scripts/collect-windows-evidence.ps1` records the exact safe environment,
+commands, stdout, stderr, exit codes, and durations for the unified suite,
+event permutations, storage probe, cancellation proof, and benchmark. It
+requires unique evidence and probe directories beneath dedicated Local AppData
+roots and refuses to overwrite an existing evidence directory. It can ingest a
+separately verified non-elevated storage-probe bundle when the host collector
+itself is high-integrity.
+
+The collector writes a relative SHA-256 manifest last and verifies complete
+coverage immediately. Independently verify that manifest before consuming or
+packaging the raw bundle. Raw directories and ZIPs remain outside Git; only
+small sanitized results and reports belong here.
 
 ## Layout
 

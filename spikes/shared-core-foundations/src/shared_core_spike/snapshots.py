@@ -64,7 +64,10 @@ def _registered_root(root: Path) -> Path:
 
 
 def _sync_file(path: Path) -> None:
-    with path.open("rb") as stream:
+    # Windows maps os.fsync() to the writable-descriptor _commit() API and
+    # returns EBADF for a read-only descriptor. The file was just created by
+    # this harness, so reopen it read/write without changing its bytes.
+    with path.open("r+b") as stream:
         os.fsync(stream.fileno())
 
 

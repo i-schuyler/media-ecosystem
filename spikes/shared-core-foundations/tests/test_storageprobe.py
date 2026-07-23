@@ -87,6 +87,21 @@ class StorageProbeTests(unittest.TestCase):
                     size_bytes=4096,
                 )
 
+    def test_windows_internal_is_an_explicit_storage_context(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "selected-target"
+            target.mkdir()
+            result = storageprobe.run_probe(
+                target_root=target,
+                storage_context="windows-internal",
+                target_label="synthetic-windows-root",
+                size_bytes=4096,
+            )
+            self.assertEqual("windows-internal", result["storage_context"])
+            self.assertEqual(
+                "Windows internal storage", result["storage_context_description"]
+            )
+
     def test_failure_preserves_named_child_for_manual_cleanup(self):
         with tempfile.TemporaryDirectory() as temporary:
             target = Path(temporary) / "selected-target"

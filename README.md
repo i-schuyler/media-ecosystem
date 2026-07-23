@@ -29,9 +29,12 @@ Repository work also follows the durable [agent instructions](AGENTS.md).
 Phase 0 is complete and Phase 1 capability proofs are active. The disposable
 [shared-core foundations harness](spikes/shared-core-foundations/README.md) and
 [evidence index](docs/spikes/phase-1/shared-core-foundations/README.md) cover the
-VPS evidence, completed Android internal/removable-storage observations, and
-remaining Windows and app-level SAF follow-up for issues #6 through #10. Phase
-1 is not complete, and no production technology stack has been selected.
+VPS evidence and completed Android internal/removable-storage and Windows
+internal-NTFS observations for issues #6 through #10. Portable paths (#6) and
+identity sidecars (#7) have evidenced their existing exit criteria; durability,
+remaining Android resources, app-level SAF, playback, codecs, and architecture
+comparison remain. Phase 1 is not complete, and no production technology stack
+has been selected.
 
 ## License
 

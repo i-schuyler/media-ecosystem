@@ -111,8 +111,9 @@ and [Markdown](../../../../spikes/shared-core-foundations/results/android-portab
   filesystem input, not a selected Android storage API or production policy.
 - **Disposition:** **retain for comparison**.
 - **Required follow-up:** Prove persisted app-level SAF access, restart/reboot,
-  card removal and reinsertion, unavailable-not-deleted behavior, Windows
-  filesystem behavior, and crash/power-loss durability where safely possible.
+  card removal and reinsertion, unavailable-not-deleted behavior, Android
+  resource/cancellation costs, and crash/power-loss durability where safely
+  possible. Windows filesystem behavior is recorded separately.
 - **ADR implications:** A future storage or persistence ADR must distinguish
   normal replacement from crash durability and raw mounts from provider APIs.
   No architecture is selected here.

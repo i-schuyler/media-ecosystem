@@ -1,0 +1,100 @@
+{
+  "algorithm": "sha256",
+  "environment": {
+    "device_model": "Microsoft Surface Book 3",
+    "filesystem": "NTFS",
+    "os": "Microsoft Windows 11 Pro 25H2 build 26200.8894",
+    "process_elevated": false,
+    "runtime": "Python 3.14.3",
+    "storage_context": "Windows internal Local AppData temporary storage"
+  },
+  "limits": {
+    "durability_claim": "successful replacement and synchronization calls do not prove controller-level or sudden-power-loss durability",
+    "physical_media_removal_during_write": "not performed",
+    "reserved_device_name_open": "not performed because Win32 aliases such as CON can address devices; the portable path corpus rejects them before filesystem access",
+    "sudden_power_loss": "not performed"
+  },
+  "observations": {
+    "case_distinct_names": {
+      "coexisted": false,
+      "errno": "EEXIST",
+      "error_kind": "FileExistsError",
+      "supported": false
+    },
+    "cleanup": {
+      "disposable_root_removed": true,
+      "passed": true,
+      "selected_parent_empty_after_probe": true
+    },
+    "component_255_characters": {
+      "requested_name_preserved": true,
+      "succeeded": true
+    },
+    "component_256_characters": {
+      "errno": "EINVAL",
+      "error_kind": "OSError",
+      "succeeded": false
+    },
+    "directory_fsync": {
+      "errno": "EACCES",
+      "error_kind": "PermissionError",
+      "returned_successfully": false,
+      "supported": false
+    },
+    "file_fsync": {
+      "returned_successfully": true
+    },
+    "ordinary_rename": {
+      "passed": true
+    },
+    "path_beyond_260_characters": {
+      "attempted_path_length_characters": 323,
+      "succeeded_beyond_260_characters": true
+    },
+    "replacement": {
+      "digest": "3c3b2b709688e96fcc4c3a578a33110f23cd4240409215d321582aa46c9b7ed3",
+      "passed": true,
+      "primitive": "os.replace"
+    },
+    "streaming_read": {
+      "bytes": 4194304,
+      "chunk_size_bytes": 32768,
+      "passed": true
+    },
+    "symlink": {
+      "errno": "EINVAL",
+      "error_kind": "OSError",
+      "returned_successfully": false,
+      "supported": false
+    },
+    "trailing_dot": {
+      "created_name": "trailing-dot",
+      "requested_name_preserved": false,
+      "succeeded": true
+    },
+    "trailing_space": {
+      "created_name": "trailing-space",
+      "requested_name_preserved": false,
+      "succeeded": true
+    },
+    "unicode_normalization": {
+      "coexisted": true,
+      "nfc_equivalent_names_remained_distinct": true
+    },
+    "write_read_hash": {
+      "bytes": 4194304,
+      "digest": "4629495eff6e0fb9ef0524122be10b4e310616a39a1590eb3f6d97d8feb5b5b6",
+      "passed": true
+    }
+  },
+  "probe": "safe-storage-capabilities",
+  "provenance": {
+    "harness_commit": "664124dbd3cce9d6049b0381d6bb16540b5bb6e1",
+    "non_elevated_bundle_manifest_sha256": "a48db9fb3667febdd3e8f00392724abceb042923f52cc347934c8f06ebd0b7af",
+    "raw_manifest_sha256": "9c9c2a2f3de5fe0a4cc3ef967e74f9307001d1b133320b671fac8640658c44fb"
+  },
+  "schema_version": 1,
+  "storage_context": "windows-internal",
+  "synthetic_size_bytes": 4194304,
+  "target_label": "windows-internal-non-elevated"
+}

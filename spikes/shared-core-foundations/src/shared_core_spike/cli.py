@@ -106,6 +106,16 @@ def main(argv: list[str] | None = None) -> int:
     benchmark_parser.add_argument("--cancellation-observation", default=hashbench.MISSING_OBSERVATION)
     benchmark_parser.add_argument("--json-output", type=Path, required=True)
     benchmark_parser.add_argument("--markdown-output", type=Path, required=True)
+    cancellation_parser = subparsers.add_parser(
+        "hash-cancellation",
+        help="run an automated long-hash cancellation and cleanup proof",
+    )
+    cancellation_parser.add_argument("--work-root", type=Path, required=True)
+    cancellation_parser.add_argument("--size-mib", type=int, default=64)
+    cancellation_parser.add_argument("--chunk-mib", type=int, default=1)
+    cancellation_parser.add_argument(
+        "--cancel-after-seconds", type=float, default=0.5
+    )
     report_parser = subparsers.add_parser(
         "hash-report", help="render Markdown from a sanitized benchmark JSON result"
     )
@@ -167,6 +177,29 @@ def main(argv: list[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
+        return 0
+    if args.command == "hash-cancellation":
+        try:
+            result = hashbench.cancellation_probe(
+                work_root=args.work_root,
+                size_bytes=args.size_mib * 1024 * 1024,
+                chunk_size=args.chunk_mib * 1024 * 1024,
+                cancel_after_seconds=args.cancel_after_seconds,
+            )
+        except hashbench.CancellationProbeError as error:
+            print(
+                json.dumps(
+                    {
+                        "result": "failed",
+                        "message": str(error),
+                        "disposable_child": error.disposable_child,
+                    },
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        print(json.dumps(result, sort_keys=True, indent=2))
         return 0
     if args.command == "storage-probe":
         try:
