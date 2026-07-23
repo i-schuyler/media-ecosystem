@@ -1,0 +1,125 @@
+{
+  "contract_version": 1,
+  "policy": {
+    "canonical_separator": "/",
+    "unicode_normalization": "NFC",
+    "comparison_key": "NFC then Unicode casefold per component",
+    "maximum_component_utf8_bytes": 255,
+    "maximum_path_utf8_bytes": 1024,
+    "physical_roots": "device-local and excluded from shared paths"
+  },
+  "vectors": [
+    {
+      "name": "ordinary root-relative path",
+      "input": "Synthetic Artist/Synthetic Album/01 Proof Track.flac",
+      "valid": true,
+      "canonical": "Synthetic Artist/Synthetic Album/01 Proof Track.flac",
+      "comparison_key": "synthetic artist/synthetic album/01 proof track.flac"
+    },
+    {
+      "name": "Windows separators normalize",
+      "input": "Synthetic Artist\\Synthetic Album\\Proof.flac",
+      "valid": true,
+      "canonical": "Synthetic Artist/Synthetic Album/Proof.flac",
+      "comparison_key": "synthetic artist/synthetic album/proof.flac"
+    },
+    {
+      "name": "Unicode decomposed input becomes NFC",
+      "input": "Café/Proof.flac",
+      "valid": true,
+      "canonical": "Café/Proof.flac",
+      "comparison_key": "café/proof.flac"
+    },
+    {
+      "name": "display differs from comparison key",
+      "input": "Beyoncé/LOUD Name.FLAC",
+      "valid": true,
+      "canonical": "Beyoncé/LOUD Name.FLAC",
+      "comparison_key": "beyoncé/loud name.flac"
+    },
+    {
+      "name": "POSIX absolute path rejected",
+      "input": "/media/Synthetic/Proof.flac",
+      "valid": false,
+      "error": "absolute"
+    },
+    {
+      "name": "drive path rejected",
+      "input": "C:\\Music\\Proof.flac",
+      "valid": false,
+      "error": "drive-letter"
+    },
+    {
+      "name": "UNC path rejected",
+      "input": "\\\\server\\share\\Proof.flac",
+      "valid": false,
+      "error": "UNC"
+    },
+    {
+      "name": "dot component rejected",
+      "input": "Synthetic/./Proof.flac",
+      "valid": false,
+      "error": "dot traversal"
+    },
+    {
+      "name": "parent traversal rejected",
+      "input": "Synthetic/../Proof.flac",
+      "valid": false,
+      "error": "dot traversal"
+    },
+    {
+      "name": "empty component rejected",
+      "input": "Synthetic//Proof.flac",
+      "valid": false,
+      "error": "empty path component"
+    },
+    {
+      "name": "trailing separator rejected",
+      "input": "Synthetic/Proof/",
+      "valid": false,
+      "error": "empty path component"
+    },
+    {
+      "name": "Windows reserved base name rejected",
+      "input": "Synthetic/CON.txt",
+      "valid": false,
+      "error": "Windows-reserved"
+    },
+    {
+      "name": "trailing dot rejected",
+      "input": "Synthetic/Proof.",
+      "valid": false,
+      "error": "trailing dots"
+    },
+    {
+      "name": "trailing space rejected",
+      "input": "Synthetic/Proof ",
+      "valid": false,
+      "error": "trailing dots"
+    },
+    {
+      "name": "Windows invalid character rejected",
+      "input": "Synthetic/Proof?.flac",
+      "valid": false,
+      "error": "Windows-invalid"
+    },
+    {
+      "name": "empty logical path rejected",
+      "input": "",
+      "valid": false,
+      "error": "non-empty"
+    }
+  ],
+  "collision_sets": [
+    {
+      "name": "case-only collision",
+      "paths": ["Synthetic/Proof.flac", "synthetic/proof.FLAC"],
+      "collision_key": "synthetic/proof.flac"
+    },
+    {
+      "name": "Unicode normalization collision",
+      "paths": ["Café/Proof.flac", "Café/Proof.flac"],
+      "collision_key": "café/proof.flac"
+    }
+  ]
+}

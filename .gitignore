@@ -40,6 +40,14 @@ temp/
 .cache/
 *.tmp
 *.bak
+__pycache__/
+*.py[cod]
+
+# Disposable capability-spike generated data
+spikes/**/.benchmark-work/
+spikes/**/generated/
+spikes/**/results/local-*
+spikes/**/results/*.partial
 
 # Build outputs
 build/
