@@ -1,0 +1,90 @@
+name: Capability spike
+description: Plan a Phase 1 proof using the repository capability-spike protocol
+title: "[Spike]: "
+labels:
+  - spike
+  - phase-1
+body:
+  - type: textarea
+    id: proof_question
+    attributes:
+      label: Proof question
+      description: State one falsifiable capability question.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform_area
+    attributes:
+      label: Platform or shared-core area
+      options:
+        - Android
+        - Windows
+        - Shared core
+        - Cross-platform or architecture
+    validations:
+      required: true
+
+  - type: input
+    id: dod_sections
+    attributes:
+      label: Related DoD sections
+      description: Name the canonical Definition of Done sections this proof supports.
+    validations:
+      required: true
+
+  - type: input
+    id: acceptance_ids
+    attributes:
+      label: Related acceptance IDs
+      description: List the canonical acceptance-matrix IDs, or explain why none applies.
+    validations:
+      required: true
+
+  - type: textarea
+    id: candidate_approach
+    attributes:
+      label: Candidate approach
+      description: Describe the approach or approaches without treating the first candidate as canonical.
+    validations:
+      required: true
+
+  - type: textarea
+    id: success_failure_criteria
+    attributes:
+      label: Success and failure criteria
+      description: Separately define observable pass, fail, and inconclusive conditions.
+    validations:
+      required: true
+
+  - type: textarea
+    id: measurements
+    attributes:
+      label: Required measurements
+      description: Include the device, exact environment, versions, and measurements to record.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction requirements
+      description: List preconditions, commands or steps, fixtures, and evidence needed to repeat the proof.
+    validations:
+      required: true
+
+  - type: textarea
+    id: safety_privacy
+    attributes:
+      label: Privacy and destructive-test considerations
+      description: Confirm synthetic or redistributable fixtures and disposable registered roots where needed.
+    validations:
+      required: true
+
+  - type: input
+    id: decision_artifact
+    attributes:
+      label: Expected ADR or decision artifact
+      description: Name the report, ADR, or follow-up issue this spike must produce.
+    validations:
+      required: true

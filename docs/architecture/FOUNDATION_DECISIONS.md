@@ -16,3 +16,5 @@ These decisions are part of the Media Ecosystem v1.0.0 product contract.
 12. **Human-editable configuration.** Supported defaults are editable in app settings and in one documented text config. Secrets are separate.
 13. **Missing storage is not deletion.** Disconnected or unmounted storage remains unavailable until verified.
 14. **Metadata backup is not audio backup.** The UI distinguishes recoverable metadata from the number and health of physical audio copies.
+15. **Apache-2.0 licensing.** Media Ecosystem is open source under the Apache License 2.0. Contributions use the same license unless explicitly stated otherwise; the project remains experimental pre-alpha software.
+16. **Evidence before architecture.** Phase 1 capability spikes follow the documented protocol and supported-device matrix. Trying a candidate does not make it canonical; the production stack is selected only after the required proofs and comparison ADR are complete.

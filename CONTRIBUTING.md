@@ -1,12 +1,17 @@
 # Contributing
 
-Media Ecosystem is in experimental pre-alpha development.
+Media Ecosystem is open source under the [Apache License 2.0](LICENSE) and
+remains in experimental pre-alpha development.
 
 ## Before changing behavior
 
-1. Read the v1.0.0 Definition of Done.
-2. Identify the relevant acceptance-matrix IDs.
-3. Record architecture changes in an ADR when appropriate.
+1. Read the [v1.0.0 Definition of Done](docs/product/Media_Ecosystem_v1.0.0_DoD.md),
+   [roadmap](docs/product/ROADMAP_v1.md),
+   [acceptance matrix](docs/product/V1_ACCEPTANCE_MATRIX.md), and
+   [foundation decisions](docs/architecture/FOUNDATION_DECISIONS.md).
+2. Identify the relevant DoD sections and acceptance IDs.
+3. Follow the [agent instructions](AGENTS.md) and record architecture changes
+   in an ADR when appropriate.
 4. Use synthetic data only.
 
 ## Pull requests
@@ -27,3 +32,9 @@ migration, or duplicate cleanup require explicit invariant and failure tests.
 
 Do not commit real audio, listening history, credentials, personal paths,
 runtime databases, or private synchronization state.
+
+## Contributions and license
+
+Unless explicitly stated otherwise, contributions intentionally submitted for
+inclusion in Media Ecosystem are provided under the same
+[Apache License 2.0](LICENSE) that applies to the project.
