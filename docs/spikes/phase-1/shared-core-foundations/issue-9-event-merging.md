@@ -106,5 +106,6 @@ python3 spikes/shared-core-foundations/scripts/harness.py events --seed 20260723
   and explicit conflicts. They must separately decide causal context and safe
   compaction. No ADR is created here.
 
-Issue #9 is fully evidenced as a Phase 1 reference-model spike but remains open
-while the draft evidence is reviewed and unmerged.
+Issue #9 was closed on 2026-07-23 after PR #13 merged because every documented
+reference-model exit criterion is satisfied. This closure applies only to the
+Phase 1 reference model and does not claim production synchronization.

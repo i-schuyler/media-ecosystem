@@ -6,9 +6,12 @@
 - **Related DoD sections:** Audio transfer; File operations; Duplicate
   detection.
 - **Related acceptance IDs:** TR-02, OP-01, DU-02.
-- **Platform and exact environment:** VPS label `vps-linux-x86_64`; Linux
-  5.15.0-185-generic; x86_64; CPython 3.12.13; SHA-256 from Python `hashlib`;
-  2026-07-23. Android and Windows measurements do not exist yet.
+- **Platform and exact environment:** Existing VPS baseline; plus Samsung
+  Galaxy Tab S10 FE 5G, Android 16 build
+  `BP4A.251205.006.X528USQU9CZE9`, aarch64, kernel
+  `6.6.102-android15-8-abX528USQU9CZE9-4k`, Python 3.14.6 in Termux, F2FS
+  private storage and Android-exposed portable-SD FUSE storage; 2026-07-22
+  local time. Windows measurements do not exist yet.
 - **Candidate approach:** Standard-library streaming SHA-256 over deterministic
   synthetic temporary files, 1 MiB chunks, three repeated runs, atomic small
   JSON/Markdown output, plus repeated-digest and one-byte-mutation probes.
@@ -44,8 +47,8 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 
 ## Results and measurements
 
-- Evidence level: **Proven on VPS** for correctness and initial throughput;
-  **harness ready but target-device run pending** for Android and Windows.
+- Evidence level: **Measured on VPS, Android Termux-private internal storage,
+  and Android portable-SD raw-path storage**; Windows remains pending.
 - All repeat digests matched for each size. The smoke test changed one byte and
   obtained a different digest.
 - Three-run VPS throughput ranges were:
@@ -57,23 +60,35 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 | 64 MiB | 812.715–1,041.083 MiB/s |
 | 256 MiB | 348.526–998.121 MiB/s |
 
+- Three-run Android internal throughput ranges were 409.541–509.787 MiB/s
+  (1 MiB), 595.589–639.969 MiB/s (16 MiB), 635.382–654.368 MiB/s (64 MiB),
+  and 601.098–601.893 MiB/s (256 MiB).
+- Three-run Android portable-SD throughput ranges were 109.831–149.370 MiB/s
+  (1 MiB), 335.947–513.351 MiB/s (16 MiB), 513.038–547.727 MiB/s (64 MiB),
+  and 531.649–589.442 MiB/s (256 MiB).
+- Sanitized Android measurements are committed for
+  [internal JSON](../../../../spikes/shared-core-foundations/results/android-internal-sha256.json),
+  [internal Markdown](../../../../spikes/shared-core-foundations/results/android-internal-sha256.md),
+  [portable-SD JSON](../../../../spikes/shared-core-foundations/results/android-portable-sd-sha256.json),
+  and [portable-SD Markdown](../../../../spikes/shared-core-foundations/results/android-portable-sd-sha256.md).
+
 - The first larger run showed cold/cache variability, so these VPS numbers are
   descriptive inputs rather than a device performance conclusion. Per-run
   elapsed time, process CPU time, digest, runtime, OS, architecture, size, and
   chunk size are in the committed
   [JSON](../../../../spikes/shared-core-foundations/results/vps-sha256.json) and
   [Markdown](../../../../spikes/shared-core-foundations/results/vps-sha256.md).
-- Memory is bounded by the 1 MiB stream chunk but peak process memory was not
-  instrumented. VPS battery/power is unavailable. Keyboard interruption uses an
-  automatically disposed temporary directory and outputs are promoted only
-  after success.
+- The Android internal observation was post-run only: 43% battery and 33.9 °C,
+  with no pre-run battery delta. The SD run recorded 40% battery and 33.9 °C
+  before and after. Peak memory, long-duration thermal behavior, and explicit
+  cancellation timing were not captured. The input stream chunk was 1 MiB.
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** No Android Galaxy Tab S10 FE 5G or Windows Surface
-  Book 3 measurement, storage-specific comparison, battery delta, thermal
-  observation, cold-cache control, peak-memory instrumentation, or explicit
-  cancellation timing is recorded. SHA-256 is the universally available
+- **Known limitations:** No Windows Surface Book 3 measurement, controlled
+  cold-cache comparison, peak-memory instrumentation, long-duration thermal
+  run, or explicit cancellation timing is recorded. The internal Android run
+  has no battery delta. SHA-256 is the universally available
   cryptographic baseline measured here; no algorithm or scan schedule is
   selected.
 - **Security observations:** SHA-256 supports integrity evidence in this proof,
@@ -84,19 +99,16 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 
 ## Production suitability and disposition
 
-- **Production suitability:** **Inconclusive** until both target devices provide
-  throughput and resource evidence. The benchmark tool itself is ready for
-  those runs.
+- **Production suitability:** **Inconclusive** until Windows throughput and the
+  remaining cross-platform resource evidence are recorded. The benchmark tool
+  itself is ready for those runs.
 - **Disposition:** **inconclusive**.
 - **Required target-device follow-up:** Run the documented full command on the
-  primary Android and Windows devices; record exact OS/build, Python patch,
-  storage type/location, power source, battery/thermal observations, resource
-  constraints, repeated measurements, and cancellation behavior. Sanitize
-  before committing.
+  primary Windows device and record remaining resource and cancellation
+  observations needed for cross-platform comparison.
 - **ADR implications:** Later architecture comparison may use target results to
-  evaluate available hashing APIs and scheduling, but this VPS baseline cannot
+  evaluate available hashing APIs and scheduling, but these measurements cannot
   select an algorithm or production policy.
 
-Issue #10 is partially evidenced, blocked on both Android and Windows
-measurements, and must remain open under its documented exit criteria.
-
+Issue #10 is partially evidenced, blocked on Windows measurements and remaining
+resource observations, and must remain open under its documented exit criteria.
