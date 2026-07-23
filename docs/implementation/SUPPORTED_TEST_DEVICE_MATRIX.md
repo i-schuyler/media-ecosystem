@@ -19,6 +19,18 @@ validation matrix documented for the release.
 | Android | Samsung Galaxy Tab S10 FE 5G | Android 16 | Removable microSD media storage; Termux available for development and diagnostics |
 | Windows | Microsoft Surface Book 3 | Windows 11 | Windows-managed media roots and removable or unavailable storage where reproducible |
 
+### Recorded Phase 1 environment evidence
+
+The 2026-07-22 Android shared-core run records Android 16 build
+`BP4A.251205.006.X528USQU9CZE9`, aarch64, kernel
+`6.6.102-android15-8-abX528USQU9CZE9-4k`, and Python 3.14.6 in Termux. It covers
+Termux-private F2FS storage and raw-path access through the Android-exposed
+portable-SD FUSE mount; see the
+[evidence index](../spikes/phase-1/shared-core-foundations/README.md). Python
+3.14.6 compatibility is an experimental observation and does not change the
+production runtime contract. Raw-path access does not establish persisted
+application access through the Storage Access Framework.
+
 Do not record serial numbers, personal paths, account names, device names, or
 other personal identifiers in spike reports.
 

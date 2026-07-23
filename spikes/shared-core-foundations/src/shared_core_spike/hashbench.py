@@ -15,6 +15,8 @@ from typing import Any
 
 ALGORITHM = "sha256"
 DEFAULT_CHUNK_SIZE = 1024 * 1024
+MISSING_OBSERVATION = "not captured by this benchmark"
+PLATFORM_KINDS = {"android", "vps", "windows", "other"}
 
 
 class BenchmarkError(RuntimeError):
@@ -71,12 +73,22 @@ def correctness_probe(size_bytes: int = 256 * 1024, chunk_size: int = 64 * 1024)
         }
 
 
-def environment(device_label: str) -> dict[str, str]:
+def environment(
+    device_label: str,
+    platform_kind: str,
+    *,
+    os_label: str | None = None,
+    architecture: str | None = None,
+    runtime_label: str | None = None,
+) -> dict[str, str]:
+    if platform_kind not in PLATFORM_KINDS:
+        raise BenchmarkError(f"unsupported platform kind: {platform_kind}")
     return {
         "device_label": device_label,
-        "runtime": f"Python {platform.python_version()}",
-        "os": f"{platform.system()} {platform.release()}",
-        "architecture": platform.machine(),
+        "platform": platform_kind,
+        "runtime": runtime_label or f"Python {platform.python_version()}",
+        "os": os_label or f"{platform.system()} {platform.release()}",
+        "architecture": architecture or platform.machine(),
     }
 
 
@@ -86,6 +98,11 @@ def benchmark(
     repeats: int,
     chunk_size: int,
     device_label: str,
+    platform_kind: str,
+    os_label: str | None = None,
+    architecture: str | None = None,
+    runtime_label: str | None = None,
+    resource_observations: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     if repeats < 2:
         raise BenchmarkError("at least two runs are required to verify digest repeatability")
@@ -119,16 +136,24 @@ def benchmark(
                 )
             path.unlink()
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "environment": environment(device_label),
+        "environment": environment(
+            device_label,
+            platform_kind,
+            os_label=os_label,
+            architecture=architecture,
+            runtime_label=runtime_label,
+        ),
         "generator": "deterministic repeated SHA-256 seed bytes, streamed to a temporary file",
         "identity_warning": "A full-file hash is integrity evidence and is never a logical Track ID.",
-        "resource_observations": {
+        "resource_observations": resource_observations
+        or {
             "cpu": "process CPU time recorded per run; utilization not instrumented",
-            "memory": "streaming chunk is bounded; peak process memory not instrumented",
-            "battery_or_power": "not available on this VPS",
-            "cancellation": "KeyboardInterrupt leaves generated files inside an automatically disposed temporary directory",
+            "memory": MISSING_OBSERVATION,
+            "battery_or_power": MISSING_OBSERVATION,
+            "thermal": MISSING_OBSERVATION,
+            "cancellation": MISSING_OBSERVATION,
         },
         "measurements": measurements,
     }
@@ -136,21 +161,39 @@ def benchmark(
 
 def render_markdown(result: dict[str, Any]) -> str:
     env = result["environment"]
+    scope = {
+        "android": "Android",
+        "vps": "VPS",
+        "windows": "Windows",
+    }.get(env.get("platform"), "recorded-environment")
     lines = [
         "# Sanitized full-file hashing measurements",
         "",
-        "> Experimental VPS evidence only. This does not select a production hash or scan policy.",
+        f"> Experimental {scope} evidence only. This does not select a production hash or scan policy.",
         "",
         f"- Device label: `{env['device_label']}`",
         f"- Runtime: `{env['runtime']}`",
         f"- OS: `{env['os']}`",
         f"- Architecture: `{env['architecture']}`",
-        f"- Generated at: `{result['generated_at_utc']}`",
-        "- Logical identity: full-file SHA-256 digests are integrity evidence, not Track IDs.",
-        "",
-        "| Size (bytes) | Chunk (bytes) | Run | Elapsed (s) | CPU (s) | MiB/s | SHA-256 |",
-        "|---:|---:|---:|---:|---:|---:|---|",
     ]
+    for key, label in (
+        ("device_model", "Device model"),
+        ("os_build", "OS build"),
+        ("kernel", "Kernel"),
+        ("storage_context", "Storage context"),
+        ("filesystem", "Filesystem"),
+    ):
+        if key in env:
+            lines.append(f"- {label}: `{env[key]}`")
+    lines.extend(
+        [
+            f"- Generated at: `{result['generated_at_utc']}`",
+            f"- Logical identity: {result['identity_warning']}",
+            "",
+            "| Size (bytes) | Chunk (bytes) | Run | Elapsed (s) | CPU (s) | MiB/s | SHA-256 |",
+            "|---:|---:|---:|---:|---:|---:|---|",
+        ]
+    )
     for item in result["measurements"]:
         lines.append(
             f"| {item['file_size_bytes']} | {item['chunk_size_bytes']} | {item['run_index']} | "
@@ -162,7 +205,17 @@ def render_markdown(result: dict[str, Any]) -> str:
             "",
             "## Resource observations",
             "",
-            *[f"- {key.replace('_', ' ').title()}: {value}" for key, value in result["resource_observations"].items()],
+            *[
+                f"- {key.replace('_', ' ').title()}: {result['resource_observations'][key]}"
+                for key in (
+                    "cpu",
+                    "memory",
+                    "battery_or_power",
+                    "thermal",
+                    "cancellation",
+                )
+                if key in result["resource_observations"]
+            ],
             "",
         ]
     )

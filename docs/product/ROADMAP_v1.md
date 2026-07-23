@@ -37,10 +37,13 @@ application code is required.
 [canonical issue catalog](../implementation/PHASE_1_CAPABILITY_ISSUES.md).
 
 The [shared-core foundations evidence](../spikes/phase-1/shared-core-foundations/README.md)
-records VPS proofs for issues #6 through #10. Portable paths, sidecar and
-snapshot filesystem behavior, and hashing still require the documented Android
-and Windows target-device runs. The hashing issue remains open; this evidence
-does not satisfy the Phase 1 exit gate or select the production stack.
+records VPS proofs and primary Android measurements for issues #6 through #10.
+Android evidence covers Termux-private F2FS execution, portable-SD raw-path
+FUSE observations, and internal/removable hashing. It does not prove persisted
+app-level SAF access. Windows runs, crash/power-loss and active-removal
+durability, and remaining resource measurements are pending. The hashing issue
+remains open; this evidence does not satisfy the Phase 1 exit gate or select
+the production stack.
 
 Prove the highest-risk capabilities before choosing the production stack:
 

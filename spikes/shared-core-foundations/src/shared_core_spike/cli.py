@@ -11,7 +11,7 @@ import random
 import sys
 import unittest
 
-from . import events, hashbench, paths
+from . import events, hashbench, paths, storageprobe
 
 
 SPIKE_ROOT = Path(__file__).resolve().parents[2]
@@ -94,8 +94,34 @@ def main(argv: list[str] | None = None) -> int:
     benchmark_parser.add_argument("--repeats", type=int, default=3)
     benchmark_parser.add_argument("--chunk-mib", type=int, default=1)
     benchmark_parser.add_argument("--device-label", required=True)
+    benchmark_parser.add_argument(
+        "--platform", choices=sorted(hashbench.PLATFORM_KINDS), required=True
+    )
+    benchmark_parser.add_argument("--os-label")
+    benchmark_parser.add_argument("--architecture")
+    benchmark_parser.add_argument("--runtime-label")
+    benchmark_parser.add_argument("--memory-observation", default=hashbench.MISSING_OBSERVATION)
+    benchmark_parser.add_argument("--battery-power-observation", default=hashbench.MISSING_OBSERVATION)
+    benchmark_parser.add_argument("--thermal-observation", default=hashbench.MISSING_OBSERVATION)
+    benchmark_parser.add_argument("--cancellation-observation", default=hashbench.MISSING_OBSERVATION)
     benchmark_parser.add_argument("--json-output", type=Path, required=True)
     benchmark_parser.add_argument("--markdown-output", type=Path, required=True)
+    report_parser = subparsers.add_parser(
+        "hash-report", help="render Markdown from a sanitized benchmark JSON result"
+    )
+    report_parser.add_argument("--json-input", type=Path, required=True)
+    report_parser.add_argument("--markdown-output", type=Path, required=True)
+    storage_parser = subparsers.add_parser(
+        "storage-probe",
+        help="explicitly probe one filesystem through a unique disposable child",
+    )
+    storage_parser.add_argument("--target-root", type=Path, required=True)
+    storage_parser.add_argument(
+        "--storage-context",
+        choices=sorted(storageprobe.STORAGE_CONTEXTS),
+        required=True,
+    )
+    storage_parser.add_argument("--target-label", required=True)
     args = parser.parse_args(argv)
 
     if args.command == "verify":
@@ -113,9 +139,62 @@ def main(argv: list[str] | None = None) -> int:
             repeats=args.repeats,
             chunk_size=args.chunk_mib * 1024 * 1024,
             device_label=args.device_label,
+            platform_kind=args.platform,
+            os_label=args.os_label,
+            architecture=args.architecture,
+            runtime_label=args.runtime_label,
+            resource_observations={
+                "cpu": "process CPU time recorded per run; utilization not instrumented",
+                "memory": args.memory_observation,
+                "battery_or_power": args.battery_power_observation,
+                "thermal": args.thermal_observation,
+                "cancellation": args.cancellation_observation,
+            },
         )
         hashbench.write_results(result, args.json_output, args.markdown_output)
         print(json.dumps({"measurements": len(result["measurements"]), "json": str(args.json_output), "markdown": str(args.markdown_output)}, sort_keys=True))
+        return 0
+    if args.command == "hash-report":
+        result = json.loads(args.json_input.read_text(encoding="utf-8"))
+        hashbench.atomic_output(args.markdown_output, hashbench.render_markdown(result))
+        print(
+            json.dumps(
+                {
+                    "json": str(args.json_input),
+                    "markdown": str(args.markdown_output),
+                    "measurements": len(result["measurements"]),
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    if args.command == "storage-probe":
+        try:
+            result = storageprobe.run_probe(
+                target_root=args.target_root,
+                storage_context=args.storage_context,
+                target_label=args.target_label,
+            )
+        except storageprobe.StorageProbeRunError as error:
+            print(
+                json.dumps(
+                    {
+                        "result": "failed",
+                        "message": str(error),
+                        "disposable_child": error.disposable_child,
+                    },
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+            )
+            return 1
+        except storageprobe.StorageProbeError as error:
+            print(
+                json.dumps({"result": "refused", "message": str(error)}, sort_keys=True),
+                file=sys.stderr,
+            )
+            return 2
+        print(json.dumps(result, sort_keys=True, indent=2))
         return 0
     parser.error("unsupported command")
     return 2

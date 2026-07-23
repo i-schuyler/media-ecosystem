@@ -6,9 +6,11 @@
 - **Related DoD sections:** Metadata synchronization; Configuration; Restore
   and migration.
 - **Related acceptance IDs:** CFG-02, REST-01, REST-02, STAT-03.
-- **Platform and exact environment:** VPS; Linux 5.15.0-185-generic x86_64;
-  repository and `/tmp` reported as ext2/ext3-family filesystems by `stat`;
-  CPython 3.12.13; 2026-07-23. No Android or Windows filesystem was tested.
+- **Platform and exact environment:** VPS baseline as previously recorded;
+  plus Samsung Galaxy Tab S10 FE 5G, Android 16 build
+  `BP4A.251205.006.X528USQU9CZE9`, aarch64, Python 3.14.6 in Termux, F2FS
+  private storage and Android-exposed portable-SD FUSE storage; 2026-07-22
+  local time. Windows was not executed.
 - **Candidate approach:** Deterministic JSON envelope, schema version, SHA-256
   checksum, same-root temporary file, file flush and `fsync`, prior snapshot
   retention, `os.replace` promotion, directory `fsync` on POSIX, newest-first
@@ -37,8 +39,10 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 
 ## Results and measurements
 
-- Evidence level: **Proven on VPS** for the modeled write/recovery protocol;
-  **harness ready but target-device run pending** for Android and Windows.
+- Evidence level: **Proven on VPS and executed on Android internal storage** for
+  the modeled fault/recovery protocol; **normal replacement and directory-sync
+  calls observed on portable SD**; sudden-power-loss, active media-removal, and
+  Windows evidence remain pending.
 - Seven snapshot tests passed. Equivalent dictionaries serialized to identical
   bytes and validated through the versioned checksum envelope.
 - Injected faults at `after_temp_sync`, `after_prior_retained`, and
@@ -51,6 +55,13 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 - Rebuilding from the valid synthetic event corpus and writing a fresh snapshot
   reproduced the directly merged event state and applied Event IDs.
 - Every snapshot filename is fixed beneath the registered disposable root.
+- The Android completed-run summary records all 35 shared-core tests passed in
+  Termux-private F2FS storage. On the portable-SD FUSE mount, `os.replace()`
+  replaced deterministic synthetic content and directory `fsync()` returned
+  successfully during normal execution.
+- The target observations are detailed in the
+  [Android internal](android-internal-storage.md) and
+  [portable-SD](android-portable-sd-storage.md) evidence reports.
 
 ## Language/runtime guarantees and filesystem assumptions
 
@@ -67,10 +78,11 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** No real process kill, kernel crash, power loss,
-  removable-media removal, FAT/exFAT behavior, Windows filesystem, or Android
-  SD-card provider behavior was measured. The rebuild model covers this
-  synthetic event envelope, not production migrations or a database.
+- **Known limitations:** No real process kill, kernel crash, sudden power loss,
+  removable-media removal during active writes, Windows filesystem, or Android
+  application SAF/provider behavior was measured. A successful `fsync()` call
+  does not prove controller-level or power-loss durability. The rebuild model
+  covers this synthetic event envelope, not production migrations or a database.
 - **Security observations:** Checksums detect accidental corruption, not
   adversarial tampering; no key or authentication scheme is implied. Invalid
   latest state is never used merely because its filename is newest.
@@ -82,14 +94,12 @@ python3 spikes/shared-core-foundations/scripts/harness.py verify --seeds 7,20260
 - **Production suitability:** Not established. The candidate identifies
   requirements for a later durability design but cannot support target claims.
 - **Disposition:** **retain for comparison**.
-- **Required target-device follow-up:** Execute fault tests on the primary
-  Windows filesystem and Android internal/removable storage; add process-kill,
-  storage-removal, full-volume, and where safely possible power-loss evidence;
-  record filesystem/mount details and actual directory durability APIs.
+- **Required target-device follow-up:** Execute fault tests on Windows and add
+  Android process-kill, storage-removal, full-volume, and where safely possible
+  power-loss evidence. App-level SAF/provider behavior also remains separate.
 - **ADR implications:** The later persistence/stack ADR must compare atomic
   replace, prior retention, directory synchronization, removable-media risks,
   corruption visibility, and rebuild semantics. This report is not that ADR.
 
-Issue #8 is partially evidenced and remains open pending both target filesystem
-proofs.
-
+Issue #8 is partially evidenced and remains open pending Windows and the
+retained crash, power-loss, media-removal, and filesystem-durability criteria.

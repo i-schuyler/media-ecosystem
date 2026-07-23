@@ -11,11 +11,17 @@ they are not GitHub-enforced blockers. Every spike follows the
 The disposable
 [shared-core foundations harness](../../spikes/shared-core-foundations/README.md)
 and [indexed reports](../spikes/phase-1/shared-core-foundations/README.md) record
-the 2026-07-23 VPS evidence for GitHub issues #6 through #10 (catalog items 5
-through 9 below). Paths, sidecar/snapshot filesystem semantics, and hashing
-remain pending on required target devices. The event reference-model proof is
-fully evidenced on the VPS but is not a production synchronization design.
-Phase 1 remains active, and catalog item 10 / GitHub issue #11 remains pending.
+the 2026-07-23 VPS and primary-Android-device evidence for GitHub issues #6
+through #10 (catalog items 5 through 9 below). Android evidence now covers the
+unified reference harness in Termux-private F2FS storage, normal replacement
+and case behavior through the portable-SD FUSE mount, and internal/removable
+SHA-256 measurements. Windows evidence, app-level Android SAF persistence,
+active removal/power-loss durability, and remaining resource observations are
+still pending. Raw Termux path access is not SAF access. The event
+reference-model proof is fully evidenced and issue #9 is closed, but it is not
+a production synchronization design. Python 3.14.6 compatibility on Android is
+experimental evidence, not a production runtime requirement. Phase 1 remains
+active, and catalog item 10 / GitHub issue #11 remains pending.
 
 ## 1. Prove Android SD-card root access and persisted permission.
 

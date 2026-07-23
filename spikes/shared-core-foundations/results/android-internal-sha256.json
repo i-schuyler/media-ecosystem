@@ -1,0 +1,43 @@
+{
+  "environment": {
+    "architecture": "aarch64",
+    "device_label": "android-galaxy-tab-s10-fe-5g",
+    "device_model": "Samsung Galaxy Tab S10 FE 5G",
+    "filesystem": "F2FS, 4096-byte filesystem blocks",
+    "kernel": "6.6.102-android15-8-abX528USQU9CZE9-4k",
+    "os": "Android 16",
+    "os_build": "BP4A.251205.006.X528USQU9CZE9",
+    "platform": "android",
+    "runtime": "Python 3.14.6",
+    "storage_context": "Termux-private internal storage"
+  },
+  "generated_at_utc": "2026-07-23T00:57:39.860858+00:00",
+  "generator": "deterministic repeated SHA-256 seed bytes, streamed to a temporary file",
+  "identity_warning": "A full-file hash is integrity evidence and is never a logical Track ID.",
+  "measurements": [
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.002391, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.002442, "file_size_bytes": 1048576, "run_index": 1, "throughput_mib_per_second": 409.541},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.001970, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.001962, "file_size_bytes": 1048576, "run_index": 2, "throughput_mib_per_second": 509.787},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.002060, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.002106, "file_size_bytes": 1048576, "run_index": 3, "throughput_mib_per_second": 474.936},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.025256, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.025570, "file_size_bytes": 16777216, "run_index": 1, "throughput_mib_per_second": 625.737},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.024632, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.025001, "file_size_bytes": 16777216, "run_index": 2, "throughput_mib_per_second": 639.969},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.026370, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.026864, "file_size_bytes": 16777216, "run_index": 3, "throughput_mib_per_second": 595.589},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.098875, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.100727, "file_size_bytes": 67108864, "run_index": 1, "throughput_mib_per_second": 635.382},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.095751, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.097804, "file_size_bytes": 67108864, "run_index": 2, "throughput_mib_per_second": 654.368},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.096646, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.098917, "file_size_bytes": 67108864, "run_index": 3, "throughput_mib_per_second": 647.009},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.417175, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.425888, "file_size_bytes": 268435456, "run_index": 1, "throughput_mib_per_second": 601.098},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.416441, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.425569, "file_size_bytes": 268435456, "run_index": 2, "throughput_mib_per_second": 601.548},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.416942, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.425325, "file_size_bytes": 268435456, "run_index": 3, "throughput_mib_per_second": 601.893}
+  ],
+  "provenance": {
+    "raw_result_filename": "local-android-sha256.json",
+    "source_manifest_sha256": "5364fa1850e96c636e00a04839fd8accee5c75c8a23121afa5c647900a015e34"
+  },
+  "resource_observations": {
+    "battery_or_power": "post-run only: 43%, unplugged and discharging; no pre-run battery delta was captured",
+    "cancellation": "not captured by this benchmark",
+    "cpu": "process CPU time recorded per run; utilization not instrumented",
+    "memory": "not captured by this benchmark",
+    "thermal": "post-run battery temperature was 33.9 degrees Celsius; no long-duration thermal measurement was captured"
+  },
+  "schema_version": 2
+}

@@ -1,0 +1,43 @@
+{
+  "environment": {
+    "architecture": "aarch64",
+    "device_label": "android-galaxy-tab-s10-fe-5g-sdcard",
+    "device_model": "Samsung Galaxy Tab S10 FE 5G",
+    "filesystem": "Android-exposed FUSE mount, 131072-byte reported blocks",
+    "kernel": "6.6.102-android15-8-abX528USQU9CZE9-4k",
+    "os": "Android 16",
+    "os_build": "BP4A.251205.006.X528USQU9CZE9",
+    "platform": "android",
+    "runtime": "Python 3.14.6",
+    "storage_context": "portable SD raw-path access through Termux"
+  },
+  "generated_at_utc": "2026-07-23T01:25:23.384857+00:00",
+  "generator": "deterministic repeated SHA-256 seed bytes, streamed to a temporary file",
+  "identity_warning": "A full-file hash is integrity evidence and is never a logical Track ID.",
+  "measurements": [
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.004258, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.006695, "file_size_bytes": 1048576, "run_index": 1, "throughput_mib_per_second": 149.370},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.004199, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.007735, "file_size_bytes": 1048576, "run_index": 2, "throughput_mib_per_second": 129.288},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.005873, "digest": "022213443630fac7fb7976c9da951cc774fa24c1015336911485a706d40ef1fd", "elapsed_seconds": 0.009105, "file_size_bytes": 1048576, "run_index": 3, "throughput_mib_per_second": 109.831},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.044466, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.047627, "file_size_bytes": 16777216, "run_index": 1, "throughput_mib_per_second": 335.947},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.029367, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.031168, "file_size_bytes": 16777216, "run_index": 2, "throughput_mib_per_second": 513.351},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.030918, "digest": "893012b0ba99dfd34fc3d67a6e6566beded12df444cedd965dadfa4fad38929d", "elapsed_seconds": 0.032514, "file_size_bytes": 16777216, "run_index": 3, "throughput_mib_per_second": 492.094},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.120375, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.124747, "file_size_bytes": 67108864, "run_index": 1, "throughput_mib_per_second": 513.038},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.113448, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.118459, "file_size_bytes": 67108864, "run_index": 2, "throughput_mib_per_second": 540.271},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.112240, "digest": "222bb77cc2557b244dc3990cff745843969a7e4a837f50fd5da01def685e38a6", "elapsed_seconds": 0.116847, "file_size_bytes": 67108864, "run_index": 3, "throughput_mib_per_second": 547.727},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.465080, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.481521, "file_size_bytes": 268435456, "run_index": 1, "throughput_mib_per_second": 531.649},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.434700, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.445855, "file_size_bytes": 268435456, "run_index": 2, "throughput_mib_per_second": 574.178},
+    {"algorithm": "sha256", "chunk_size_bytes": 1048576, "cpu_seconds": 0.424095, "digest": "870c7f1f798cd11e1877d46bb01acd99bbe2c21f0eb31c58bf6c2368853f04ed", "elapsed_seconds": 0.434309, "file_size_bytes": 268435456, "run_index": 3, "throughput_mib_per_second": 589.442}
+  ],
+  "provenance": {
+    "raw_result_filename": "sd-sha256.json",
+    "source_manifest_sha256": "297ab977d4968428ce5cfbac716c9b7e24c6695f3984422356334bdf16e1d6b7"
+  },
+  "resource_observations": {
+    "battery_or_power": "before and after: 40%, unplugged and discharging; charge counter changed from 4096540 to 4086450",
+    "cancellation": "not captured by this benchmark",
+    "cpu": "process CPU time recorded per run; utilization not instrumented",
+    "memory": "not captured by this benchmark",
+    "thermal": "battery temperature was 33.9 degrees Celsius before and after; no long-duration thermal measurement was captured"
+  },
+  "schema_version": 2
+}

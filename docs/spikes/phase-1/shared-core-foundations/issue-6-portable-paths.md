@@ -6,9 +6,11 @@
 - **Related DoD sections:** Identity and paths; File operations; Restore and
   migration.
 - **Related acceptance IDs:** FS-01, FS-02, OP-01.
-- **Platform and exact environment:** VPS; Linux 5.15.0-185-generic x86_64;
-  ext2/ext3-family filesystem label reported by `stat`; CPython 3.12.13; tested
-  2026-07-23. Android and Windows were not executed.
+- **Platform and exact environment:** VPS baseline as previously recorded;
+  plus Samsung Galaxy Tab S10 FE 5G, Android 16 build
+  `BP4A.251205.006.X528USQU9CZE9`, aarch64, Python 3.14.6 in Termux, F2FS
+  private storage and an Android-exposed portable-SD FUSE mount; tested
+  2026-07-22 local time. Windows was not executed.
 - **Candidate approach:** NFC display paths with `/` separators, a separate
   NFC-plus-casefold collision key, conservative invalid-name and UTF-8 byte
   limits, and a device-local registered-root resolver.
@@ -40,9 +42,10 @@ Windows use `py -3` as documented in the
 
 ## Results and measurements
 
-- Evidence level: **Proven on VPS** for deterministic Python behavior and
-  registered-root containment; **simulated only** for Windows-shaped input;
-  **harness ready but target-device run pending** for Android and Windows.
+- Evidence level: **Proven on VPS and executed on Android** for deterministic
+  harness behavior; **measured on the Android-exposed FUSE mount** for case and
+  basic path operations; **simulated only** for Windows-shaped input, with the
+  Windows target run still pending.
 - All 16 positive/negative vectors and two collision sets passed.
 - Windows separators normalized to `/`; POSIX absolute, drive-letter, UNC,
   dot traversal, empty component, reserved-name, trailing dot/space, and
@@ -52,17 +55,24 @@ Windows use `py -3` as documented in the
 - The 255-byte component and 1,024-byte path policies passed boundary tests.
 - Rename, move, physical-root relink, and missing-root tests passed without
   changing or deleting logical state.
+- The Android completed-run summary records all 35 shared-core tests passed.
+  On the portable-SD FUSE mount, ordinary rename passed, a unique disposable
+  child could be created and removed, and case-distinct names could not coexist.
+  This actual mount observation informs collision detection but does not turn
+  symlink support into a canonical path requirement.
+- The exact Android storage environment, probe, and interpretation are in the
+  [portable-SD evidence report](android-portable-sd-storage.md).
 - The executable contract and machine-readable expectations are documented in
   [`EXPERIMENTAL_PATH_CONTRACT.md`](../../../../spikes/shared-core-foundations/EXPERIMENTAL_PATH_CONTRACT.md)
   and [`path-vectors.json`](../../../../spikes/shared-core-foundations/fixtures/path-vectors.json).
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** Linux did not prove actual Android removable-storage
-  or Windows filename/API behavior. Unicode casefold is a conservative
-  experimental comparison, not a measured NTFS or Android filesystem rule.
-  Exact long-path, normalization-on-disk, Explorer, Storage Access Framework,
-  removal, reinsertion, and relink behavior remain unmeasured.
+- **Known limitations:** Windows filename/API behavior remains untested.
+  Unicode casefold remains a conservative experimental comparison. Exact
+  long-path, normalization-on-disk, Explorer, app-level Storage Access
+  Framework persistence, removal, reinsertion, and relink behavior remain
+  unmeasured. Raw Termux access is not SAF evidence.
 - **Security observations:** Absolute roots, traversal, UNC/drive injection,
   invalid names, and containment escape fail closed. A missing registered root
   raises an unavailable result and never emits deletion intent.
@@ -72,16 +82,16 @@ Windows use `py -3` as documented in the
 ## Production suitability and disposition
 
 - **Production suitability:** Not established. The model is useful input to a
-  later storage/path decision only after both target runs.
+  later storage/path decision only after Windows and remaining Android
+  lifecycle evidence.
 - **Disposition:** **retain for comparison**.
 - **Required target-device follow-up:** Run `paths` and the unified suite on the
-  Galaxy Tab S10 FE 5G in Termux and Surface Book 3 on Windows 11; add actual
-  filesystem creation, removable/unavailable root, reinsertion, and relink
-  observations from issues #2 and platform storage proofs.
+  Surface Book 3 on Windows 11; separately add app-level Android SAF,
+  removable/unavailable root, reinsertion, and relink observations through
+  issue #2.
 - **ADR implications:** A later storage or stack ADR must separate shared
   logical paths from device-local roots and compare measured target filesystem
   semantics. No ADR is created by this result.
 
-Issue #6 is partially evidenced and remains open pending both target-device
-runs.
-
+Issue #6 is partially evidenced and remains open pending Windows evidence and
+the remaining cross-platform exit criteria.

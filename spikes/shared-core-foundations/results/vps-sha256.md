@@ -7,7 +7,7 @@
 - OS: `Linux 5.15.0-185-generic`
 - Architecture: `x86_64`
 - Generated at: `2026-07-23T00:18:20.010042+00:00`
-- Logical identity: full-file SHA-256 digests are integrity evidence, not Track IDs.
+- Logical identity: A full-file hash is integrity evidence and is never a logical Track ID.
 
 | Size (bytes) | Chunk (bytes) | Run | Elapsed (s) | CPU (s) | MiB/s | SHA-256 |
 |---:|---:|---:|---:|---:|---:|---|
