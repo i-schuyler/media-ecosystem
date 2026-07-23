@@ -1,0 +1,37 @@
+name: Shared-core spike proofs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/shared-core-spike.yml"
+      - "spikes/shared-core-foundations/**"
+      - "docs/spikes/phase-1/shared-core-foundations/**"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/shared-core-spike.yml"
+      - "spikes/shared-core-foundations/**"
+      - "docs/spikes/phase-1/shared-core-foundations/**"
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-linux-proof:
+    name: Synthetic Linux proof only
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Record runtime scope
+        run: |
+          python3 --version
+          echo "This Ubuntu run does not prove Android or Windows behavior."
+
+      - name: Run disposable shared-core proofs
+        run: >-
+          python3 spikes/shared-core-foundations/scripts/harness.py
+          verify --seeds 7,20260723

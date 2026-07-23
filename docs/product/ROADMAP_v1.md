@@ -6,8 +6,8 @@ Build in large, reviewable vertical slices. Each slice must leave the repository
 
 ## Phase 0 — Product and repository foundation
 
-**Status:** The initial contract and guardrail baseline is merged. The Phase 0
-completion slice is in progress; Phase 1 proof work has not begun.
+**Status:** Complete. The contract, licensing, guardrails, device matrix,
+protocol, issue catalog, labels, milestones, and planning issues are merged.
 
 Completed baseline:
 
@@ -31,10 +31,16 @@ application code is required.
 
 ## Phase 1 — Technical proof-of-capability
 
-**Status:** Upcoming. Follow the
+**Status:** Active. Follow the
 [capability-spike protocol](../implementation/CAPABILITY_SPIKE_PROTOCOL.md),
 [test-device matrix](../implementation/SUPPORTED_TEST_DEVICE_MATRIX.md), and
 [canonical issue catalog](../implementation/PHASE_1_CAPABILITY_ISSUES.md).
+
+The [shared-core foundations evidence](../spikes/phase-1/shared-core-foundations/README.md)
+records VPS proofs for issues #6 through #10. Portable paths, sidecar and
+snapshot filesystem behavior, and hashing still require the documented Android
+and Windows target-device runs. The hashing issue remains open; this evidence
+does not satisfy the Phase 1 exit gate or select the production stack.
 
 Prove the highest-risk capabilities before choosing the production stack:
 

@@ -6,6 +6,17 @@ they are not GitHub-enforced blockers. Every spike follows the
 [capability-spike protocol](CAPABILITY_SPIKE_PROTOCOL.md) and the
 [supported test-device matrix](SUPPORTED_TEST_DEVICE_MATRIX.md).
 
+## Evidence in progress
+
+The disposable
+[shared-core foundations harness](../../spikes/shared-core-foundations/README.md)
+and [indexed reports](../spikes/phase-1/shared-core-foundations/README.md) record
+the 2026-07-23 VPS evidence for GitHub issues #6 through #10 (catalog items 5
+through 9 below). Paths, sidecar/snapshot filesystem semantics, and hashing
+remain pending on required target devices. The event reference-model proof is
+fully evidenced on the VPS but is not a production synchronization design.
+Phase 1 remains active, and catalog item 10 / GitHub issue #11 remains pending.
+
 ## 1. Prove Android SD-card root access and persisted permission.
 
 - **Purpose:** Establish that the Android validation device can safely retain
