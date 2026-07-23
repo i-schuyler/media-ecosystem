@@ -7,10 +7,11 @@
   migration.
 - **Related acceptance IDs:** FS-01, FS-02, OP-01.
 - **Platform and exact environment:** VPS baseline as previously recorded;
-  plus Samsung Galaxy Tab S10 FE 5G, Android 16 build
+  Samsung Galaxy Tab S10 FE 5G, Android 16 build
   `BP4A.251205.006.X528USQU9CZE9`, aarch64, Python 3.14.6 in Termux, F2FS
-  private storage and an Android-exposed portable-SD FUSE mount; tested
-  2026-07-22 local time. Windows was not executed.
+  private storage and an Android-exposed portable-SD FUSE mount; and Microsoft
+  Surface Book 3, Windows 11 Pro 25H2 build `26200.8894`, 64-bit NTFS, CPython
+  3.14.3. Target runs were recorded on 2026-07-22/23 local time.
 - **Candidate approach:** NFC display paths with `/` separators, a separate
   NFC-plus-casefold collision key, conservative invalid-name and UTF-8 byte
   limits, and a device-local registered-root resolver.
@@ -42,10 +43,10 @@ Windows use `py -3` as documented in the
 
 ## Results and measurements
 
-- Evidence level: **Proven on VPS and executed on Android** for deterministic
-  harness behavior; **measured on the Android-exposed FUSE mount** for case and
-  basic path operations; **simulated only** for Windows-shaped input, with the
-  Windows target run still pending.
+- Evidence level: **Proven on the reference model and executed on both primary
+  target devices** for deterministic harness behavior; measured on the
+  Android-exposed FUSE mount and Windows internal NTFS for filesystem
+  observations.
 - All 16 positive/negative vectors and two collision sets passed.
 - Windows separators normalized to `/`; POSIX absolute, drive-letter, UNC,
   dot traversal, empty component, reserved-name, trailing dot/space, and
@@ -60,6 +61,15 @@ Windows use `py -3` as documented in the
   child could be created and removed, and case-distinct names could not coexist.
   This actual mount observation informs collision detection but does not turn
   symlink support into a canonical path requirement.
+- The Windows final run recorded 46 tests with 45 passed and one
+  Windows-directory-symlink test skipped. All path vectors passed. In a
+  separate non-elevated NTFS probe, case-distinct names did not coexist,
+  NFC-equivalent composed/decomposed names did coexist, trailing dots/spaces
+  were removed by the observed path API, a 255-character component succeeded,
+  a 256-character component failed, and a 323-character complete path
+  succeeded.
+- The exact Windows environment, raw provenance, and scope are in the
+  [Windows evidence report](windows-internal-storage.md).
 - The exact Android storage environment, probe, and interpretation are in the
   [portable-SD evidence report](android-portable-sd-storage.md).
 - The executable contract and machine-readable expectations are documented in
@@ -68,11 +78,11 @@ Windows use `py -3` as documented in the
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** Windows filename/API behavior remains untested.
-  Unicode casefold remains a conservative experimental comparison. Exact
-  long-path, normalization-on-disk, Explorer, app-level Storage Access
-  Framework persistence, removal, reinsertion, and relink behavior remain
-  unmeasured. Raw Termux access is not SAF evidence.
+- **Known limitations:** Unicode casefold remains a conservative experimental
+  comparison. One NTFS/CPython path observation does not generalize to every
+  Windows API or filesystem. Explorer, app-level Storage Access Framework
+  persistence, removal, reinsertion, and relink behavior remain unmeasured.
+  Raw Termux access is not SAF evidence.
 - **Security observations:** Absolute roots, traversal, UNC/drive injection,
   invalid names, and containment escape fail closed. A missing registered root
   raises an unavailable result and never emits deletion intent.
@@ -81,17 +91,19 @@ Windows use `py -3` as documented in the
 
 ## Production suitability and disposition
 
-- **Production suitability:** Not established. The model is useful input to a
-  later storage/path decision only after Windows and remaining Android
-  lifecycle evidence.
+- **Production suitability:** Not established. The cross-platform model is
+  useful input to a later storage/path decision, while app-level Android root
+  lifecycle and Windows Explorer behavior remain separate work.
 - **Disposition:** **retain for comparison**.
-- **Required target-device follow-up:** Run `paths` and the unified suite on the
-  Surface Book 3 on Windows 11; separately add app-level Android SAF,
-  removable/unavailable root, reinsertion, and relink observations through
-  issue #2.
+- **Required target-device follow-up:** Separately add app-level Android SAF,
+  removable/unavailable root, reinsertion, and relink observations through the
+  Android root-access issue.
 - **ADR implications:** A later storage or stack ADR must separate shared
   logical paths from device-local roots and compare measured target filesystem
   semantics. No ADR is created by this result.
 
-Issue #6 is partially evidenced and remains open pending Windows evidence and
-the remaining cross-platform exit criteria.
+Issue #6's existing exit criteria are evidenced across the recorded Android
+and Windows executions: the same valid logical representation round-trips,
+unsafe traversal/root escape fails, and missing roots remain unavailable
+rather than deleted. The issue may close; application storage lifecycle and
+production policy remain separate Phase 1 work.

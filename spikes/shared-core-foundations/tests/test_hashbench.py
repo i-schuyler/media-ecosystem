@@ -105,6 +105,7 @@ class HashBenchmarkTests(unittest.TestCase):
             ("vps-sha256", "VPS"),
             ("android-internal-sha256", "Android"),
             ("android-portable-sd-sha256", "Android"),
+            ("windows-internal-sha256", "Windows"),
         ):
             with self.subTest(stem=stem):
                 result = json.loads(

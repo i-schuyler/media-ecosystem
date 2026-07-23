@@ -6,12 +6,13 @@
 - **Related DoD sections:** Audio transfer; File operations; Duplicate
   detection.
 - **Related acceptance IDs:** TR-02, OP-01, DU-02.
-- **Platform and exact environment:** Existing VPS baseline; plus Samsung
+- **Platform and exact environment:** Existing VPS baseline; Samsung
   Galaxy Tab S10 FE 5G, Android 16 build
   `BP4A.251205.006.X528USQU9CZE9`, aarch64, kernel
   `6.6.102-android15-8-abX528USQU9CZE9-4k`, Python 3.14.6 in Termux, F2FS
   private storage and Android-exposed portable-SD FUSE storage; 2026-07-22
-  local time. Windows measurements do not exist yet.
+  local time; plus Microsoft Surface Book 3, Windows 11 Pro 25H2 build
+  `26200.8894`, 64-bit NTFS, CPython 3.14.3; 2026-07-23 local time.
 - **Candidate approach:** Standard-library streaming SHA-256 over deterministic
   synthetic temporary files, 1 MiB chunks, three repeated runs, atomic small
   JSON/Markdown output, plus repeated-digest and one-byte-mutation probes.
@@ -48,7 +49,7 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 ## Results and measurements
 
 - Evidence level: **Measured on VPS, Android Termux-private internal storage,
-  and Android portable-SD raw-path storage**; Windows remains pending.
+  Android portable-SD raw-path storage, and Windows internal NTFS**.
 - All repeat digests matched for each size. The smoke test changed one byte and
   obtained a different digest.
 - Three-run VPS throughput ranges were:
@@ -66,11 +67,19 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 - Three-run Android portable-SD throughput ranges were 109.831–149.370 MiB/s
   (1 MiB), 335.947–513.351 MiB/s (16 MiB), 513.038–547.727 MiB/s (64 MiB),
   and 531.649–589.442 MiB/s (256 MiB).
+- Three-run Windows internal NTFS throughput ranges were 24.230–166.658 MiB/s
+  (1 MiB), 134.045–222.411 MiB/s (16 MiB), 135.940–175.770 MiB/s (64 MiB),
+  and 152.343–232.510 MiB/s (256 MiB). Cache state was uncontrolled, so no
+  warm/cold labels are claimed.
 - Sanitized Android measurements are committed for
   [internal JSON](../../../../spikes/shared-core-foundations/results/android-internal-sha256.json),
   [internal Markdown](../../../../spikes/shared-core-foundations/results/android-internal-sha256.md),
   [portable-SD JSON](../../../../spikes/shared-core-foundations/results/android-portable-sd-sha256.json),
   and [portable-SD Markdown](../../../../spikes/shared-core-foundations/results/android-portable-sd-sha256.md).
+- Sanitized Windows measurements are committed as
+  [JSON](../../../../spikes/shared-core-foundations/results/windows-internal-sha256.json)
+  and reproducible
+  [Markdown](../../../../spikes/shared-core-foundations/results/windows-internal-sha256.md).
 
 - The first larger run showed cold/cache variability, so these VPS numbers are
   descriptive inputs rather than a device performance conclusion. Per-run
@@ -82,13 +91,21 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
   with no pre-run battery delta. The SD run recorded 40% battery and 33.9 °C
   before and after. Peak memory, long-duration thermal behavior, and explicit
   cancellation timing were not captured. The input stream chunk was 1 MiB.
+- The Windows benchmark's peak process working set was 27,963,392 bytes.
+  Per-run CPU time and elapsed time are in the result table. AC remained online
+  and battery stayed at 100% before/after the 36-second capture, so no battery
+  delta was resolvable. Windows exposed no usable temperature value.
+- The automated Windows cancellation proof stopped a 64 MiB synthetic worker
+  after 0.5 seconds, observed exit `130`, produced no final artifact, identified
+  the temporary file, and removed the disposable root. The result is
+  [machine-readable](../../../../spikes/shared-core-foundations/results/windows-hash-cancellation.json).
 
 ## Limitations, security, and privacy
 
-- **Known limitations:** No Windows Surface Book 3 measurement, controlled
-  cold-cache comparison, peak-memory instrumentation, long-duration thermal
-  run, or explicit cancellation timing is recorded. The internal Android run
-  has no battery delta. SHA-256 is the universally available
+- **Known limitations:** No controlled cold-cache comparison or long-duration
+  thermal run is recorded. Android still lacks peak-memory instrumentation and
+  explicit cancellation timing, and the internal Android run has no battery
+  delta. SHA-256 is the universally available
   cryptographic baseline measured here; no algorithm or scan schedule is
   selected.
 - **Security observations:** SHA-256 supports integrity evidence in this proof,
@@ -99,16 +116,18 @@ python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
 
 ## Production suitability and disposition
 
-- **Production suitability:** **Inconclusive** until Windows throughput and the
-  remaining cross-platform resource evidence are recorded. The benchmark tool
-  itself is ready for those runs.
+- **Production suitability:** **Inconclusive** until the remaining Android
+  resource and cancellation evidence is recorded. The benchmark tool itself is
+  ready for later comparisons.
 - **Disposition:** **inconclusive**.
-- **Required target-device follow-up:** Run the documented full command on the
-  primary Windows device and record remaining resource and cancellation
-  observations needed for cross-platform comparison.
+- **Required target-device follow-up:** Record Android peak memory, explicit
+  cancellation/cleanup, and any remaining practical resource observations
+  needed for cross-platform comparison.
 - **ADR implications:** Later architecture comparison may use target results to
   evaluate available hashing APIs and scheduling, but these measurements cannot
   select an algorithm or production policy.
 
-Issue #10 is partially evidenced, blocked on Windows measurements and remaining
-resource observations, and must remain open under its documented exit criteria.
+Issue #10 remains open. Windows throughput, CPU time, peak memory,
+battery/power/thermal availability, and cancellation are now explicit, but
+practical Android peak-memory and cancellation costs remain incomplete under
+the cross-platform exit criteria.

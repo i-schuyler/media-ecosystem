@@ -1,0 +1,26 @@
+{
+  "cancel_after_seconds": 0.5,
+  "chunk_size_bytes": 1048576,
+  "cleanup": {
+    "disposable_root_removed": true,
+    "passed": true
+  },
+  "command_duration_seconds": 4.014629,
+  "expected_cancellation_exit_code": 130,
+  "finalized_artifact_exists": false,
+  "finalized_artifact_reported": false,
+  "operation_timeout_seconds": 120.0,
+  "probe": "automated-hash-cancellation",
+  "provenance": {
+    "harness_commit": "664124dbd3cce9d6049b0381d6bb16540b5bb6e1",
+    "raw_manifest_sha256": "9c9c2a2f3de5fe0a4cc3ef967e74f9307001d1b133320b671fac8640658c44fb"
+  },
+  "result": "passed",
+  "schema_version": 1,
+  "synthetic_size_bytes": 67108864,
+  "temporary_files_before_cleanup": [
+    "synthetic.bin"
+  ],
+  "wall_seconds": 2.289384,
+  "worker_exit_code": 130
+}
