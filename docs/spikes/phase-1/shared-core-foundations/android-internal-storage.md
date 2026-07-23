@@ -90,8 +90,10 @@ and [Markdown](../../../../spikes/shared-core-foundations/results/android-intern
   measurement, or cancellation measurement exists.
 - **Known limitations:** Python 3.14.6 compatibility is measured evidence, not
   a production runtime requirement and not a change to the experimental
-  CPython 3.12 baseline. No Windows target run, sudden-power-loss test,
-  physical-media removal, app lifecycle, or SAF permission was tested.
+  CPython 3.12 baseline. No sudden-power-loss test, physical-media removal,
+  app lifecycle, SAF permission, Android peak-memory measurement, or explicit
+  Android cancellation proof was tested. Windows evidence is recorded
+  separately and does not fill these Android gaps.
 - **Security observations:** The benchmark used deterministic synthetic bytes.
   SHA-256 remains integrity evidence and never assigns logical identity.
 - **Privacy observations:** Private absolute Termux paths were removed. The
@@ -103,7 +105,8 @@ and [Markdown](../../../../spikes/shared-core-foundations/results/android-intern
 - **Production suitability:** Not established. These results are target-device
   evidence for comparison only.
 - **Disposition:** **retain for comparison**.
-- **Required follow-up:** Complete Windows evidence and the remaining resource,
-  cancellation, and durability observations required by issues #6–#10.
+- **Required follow-up:** Complete the remaining Android resource,
+  cancellation, SAF, and durability observations required by issues #8 and
+  #10 and the Android storage-access issue.
 - **ADR implications:** None by itself. This evidence does not select Python,
   SHA-256, a storage API, persistence design, or production architecture.

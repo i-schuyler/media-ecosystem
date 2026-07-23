@@ -31,6 +31,16 @@ portable-SD FUSE mount; see the
 production runtime contract. Raw-path access does not establish persisted
 application access through the Storage Access Framework.
 
+The 2026-07-23 Windows shared-core run records Microsoft Surface Book 3,
+Windows 11 Pro 25H2 version `10.0.26200` / build `26200.8894`, 64-bit NTFS,
+Windows PowerShell Desktop 5.1.26100.8894, and CPython 3.14.3. It covers the
+shared-core reference harness, a non-elevated internal-NTFS storage probe,
+bounded SHA-256/resource measurements, and automated cancellation; see the
+[Windows evidence report](../spikes/phase-1/shared-core-foundations/windows-internal-storage.md).
+It does not establish Windows playback, Explorer monitoring, removable-media
+failure handling, or sudden-power-loss durability. Python remains disposable
+evidence tooling, not a production requirement.
+
 Do not record serial numbers, personal paths, account names, device names, or
 other personal identifiers in spike reports.
 
