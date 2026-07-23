@@ -28,6 +28,7 @@ class HashBenchmarkTests(unittest.TestCase):
             result["measurements"][0]["digest"], result["measurements"][1]["digest"]
         )
         self.assertIn("never a logical Track ID", result["identity_warning"])
+        self.assertIn("peak_process_working_set", result["resource_measurements"])
 
     def test_result_outputs_are_small_structured_files(self):
         result = hashbench.benchmark(
@@ -114,6 +115,23 @@ class HashBenchmarkTests(unittest.TestCase):
                 self.assertIn(f"Experimental {expected_scope} evidence only", report)
                 if expected_scope != "VPS":
                     self.assertNotIn("not available on this VPS", report)
+
+    def test_cancellation_probe_exits_cancelled_without_final_artifact(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            target = Path(temporary) / "selected-target"
+            target.mkdir()
+            result = hashbench.cancellation_probe(
+                work_root=target,
+                size_bytes=1024 * 1024,
+                chunk_size=64 * 1024,
+                cancel_after_seconds=0.05,
+                operation_timeout_seconds=5,
+            )
+            self.assertEqual(hashbench.CANCELLATION_EXIT_CODE, result["worker_exit_code"])
+            self.assertFalse(result["finalized_artifact_reported"])
+            self.assertFalse(result["finalized_artifact_exists"])
+            self.assertTrue(result["cleanup"]["disposable_root_removed"])
+            self.assertEqual([], list(target.iterdir()))
 
 
 if __name__ == "__main__":

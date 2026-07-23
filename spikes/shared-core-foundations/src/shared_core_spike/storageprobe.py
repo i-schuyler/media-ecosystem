@@ -7,8 +7,10 @@ import hashlib
 import os
 from pathlib import Path
 import re
+import shutil
 import tempfile
 from typing import Any
+import unicodedata
 
 
 PROBE_PREFIX = "media-ecosystem-storage-probe-"
@@ -19,6 +21,7 @@ STORAGE_CONTEXTS = {
     "android-shared-internal": "Android shared internal storage",
     "portable-sd-raw-path": "portable SD raw-path access",
     "app-saf": "future app-level Storage Access Framework access",
+    "windows-internal": "Windows internal storage",
 }
 
 
@@ -98,6 +101,112 @@ def _directory_fsync(directory: Path) -> dict[str, Any]:
     except OSError as error:
         return _unsupported_observation(error)
     return {"supported": True, "returned_successfully": True}
+
+
+def _error_observation(error: OSError) -> dict[str, Any]:
+    observation: dict[str, Any] = {
+        "succeeded": False,
+        "error_kind": type(error).__name__,
+        "errno": errno.errorcode.get(error.errno, error.errno),
+    }
+    if getattr(error, "winerror", None) is not None:
+        observation["winerror"] = error.winerror
+    return observation
+
+
+def _probe_windows_name(directory: Path, name: str) -> dict[str, Any]:
+    before = set(os.listdir(directory))
+    try:
+        _write_and_sync(directory / name, b"synthetic-windows-name-observation\n")
+    except OSError as error:
+        observation = _error_observation(error)
+    else:
+        after = set(os.listdir(directory))
+        observation = {
+            "succeeded": True,
+            "requested_name_preserved": name in after,
+            "created_names": sorted(after - before),
+        }
+    finally:
+        for created_name in set(os.listdir(directory)) - before:
+            created_path = directory / created_name
+            if created_path.is_file() or created_path.is_symlink():
+                created_path.unlink()
+    return observation
+
+
+def _probe_windows_unicode(directory: Path) -> dict[str, Any]:
+    composed = "unicode-\u00e9"
+    decomposed = "unicode-e\u0301"
+    before = set(os.listdir(directory))
+    try:
+        _write_and_sync(directory / composed, b"composed\n")
+        try:
+            _write_and_sync(directory / decomposed, b"decomposed\n")
+        except OSError as error:
+            second = _error_observation(error)
+        else:
+            second = {"succeeded": True}
+        after = set(os.listdir(directory))
+        return {
+            "nfc_equivalent": unicodedata.normalize("NFC", composed)
+            == unicodedata.normalize("NFC", decomposed),
+            "coexisted": composed in after and decomposed in after,
+            "created_names": sorted(after - before),
+            "second_create": second,
+        }
+    finally:
+        for created_name in set(os.listdir(directory)) - before:
+            created_path = directory / created_name
+            if created_path.is_file() or created_path.is_symlink():
+                created_path.unlink()
+
+
+def _probe_windows_long_path(directory: Path) -> dict[str, Any]:
+    long_root = directory / "long-path-observation"
+    current = long_root
+    attempted_length = len(str(current))
+    try:
+        long_root.mkdir()
+        while len(str(current)) < 300:
+            current = current / "segment-0123456789abcdef"
+            attempted_length = len(str(current))
+            current.mkdir()
+        marker = current / "marker.txt"
+        attempted_length = len(str(marker))
+        _write_and_sync(marker, b"synthetic-long-path-observation\n")
+        return {
+            "succeeded_beyond_260_characters": attempted_length > 260,
+            "attempted_path_length_characters": attempted_length,
+        }
+    except OSError as error:
+        observation = _error_observation(error)
+        observation["attempted_path_length_characters"] = attempted_length
+        return observation
+    finally:
+        if long_root.exists():
+            shutil.rmtree(long_root)
+
+
+def _windows_name_semantics(directory: Path) -> dict[str, Any]:
+    if os.name != "nt":
+        return {
+            "performed": False,
+            "reason": "Windows-specific filesystem name observations were not run",
+        }
+    return {
+        "performed": True,
+        "unicode_normalization": _probe_windows_unicode(directory),
+        "trailing_dot": _probe_windows_name(directory, "trailing-dot."),
+        "trailing_space": _probe_windows_name(directory, "trailing-space "),
+        "component_255_characters": _probe_windows_name(directory, "a" * 255),
+        "component_256_characters": _probe_windows_name(directory, "b" * 256),
+        "path_beyond_260_characters": _probe_windows_long_path(directory),
+        "reserved_names": {
+            "physical_open_attempted": False,
+            "reason": "Win32 reserved device aliases were not opened; the portable path corpus rejects them before filesystem access",
+        },
+    }
 
 
 def run_probe(
@@ -191,6 +300,8 @@ def run_probe(
         if stream_digest != replacement_digest or stream_bytes != size_bytes:
             raise StorageProbeError("streaming read verification failed")
 
+        windows_name_semantics = _windows_name_semantics(disposable)
+
         if symlink_path.is_symlink():
             symlink_path.unlink()
         if case_distinct["supported"]:
@@ -229,6 +340,7 @@ def run_probe(
                     "bytes": stream_bytes,
                     "chunk_size_bytes": 32 * 1024,
                 },
+                "windows_name_semantics": windows_name_semantics,
                 "cleanup": {"passed": True, "disposable_root_removed": True},
             },
             "limits": {
