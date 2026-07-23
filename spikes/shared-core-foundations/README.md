@@ -16,8 +16,10 @@ CPython 3.12 was already installed on the VPS, is available in Android Termux,
 and has a supported Windows 11 distribution. Its standard library supplies
 Unicode normalization, JSON, UUIDs, checksums, temporary directories, atomic
 rename primitives, and tests, so the harness has no third-party dependencies.
-The recorded VPS baseline is CPython 3.12.13; target runs should use CPython
-3.12.x and record the exact patch version.
+The recorded VPS experimental baseline is CPython 3.12.13. The Android evidence
+also records a successful CPython 3.14.6 run. Target runs must record the exact
+version; this compatibility observation does not turn either version into a
+production runtime requirement.
 
 This is a convenience choice for reproducible experimentation only. It does
 not select the application language, shared-core packaging, persistence layer,
@@ -83,6 +85,7 @@ The full VPS command used for the committed results was:
 python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
   --sizes-mib 1,16,64,256 --repeats 3 --chunk-mib 1 \
   --device-label vps-linux-x86_64 \
+  --platform vps \
   --json-output spikes/shared-core-foundations/results/vps-sha256.json \
   --markdown-output spikes/shared-core-foundations/results/vps-sha256.md
 ```
@@ -93,6 +96,9 @@ Run on the primary Android device in Termux from a clean checkout:
 python3 spikes/shared-core-foundations/scripts/harness.py hash-benchmark \
   --sizes-mib 1,16,64,256 --repeats 3 --chunk-mib 1 \
   --device-label android-galaxy-tab-s10-fe-5g \
+  --platform android \
+  --os-label "Android 16" --architecture aarch64 \
+  --runtime-label "Python 3.14.6" \
   --json-output spikes/shared-core-foundations/results/local-android-sha256.json \
   --markdown-output spikes/shared-core-foundations/results/local-android-sha256.md
 ```
@@ -103,6 +109,7 @@ Run on the primary Windows device from PowerShell:
 py -3 .\spikes\shared-core-foundations\scripts\harness.py hash-benchmark `
   --sizes-mib 1,16,64,256 --repeats 3 --chunk-mib 1 `
   --device-label windows-surface-book-3 `
+  --platform windows `
   --json-output .\spikes\shared-core-foundations\results\local-windows-sha256.json `
   --markdown-output .\spikes\shared-core-foundations\results\local-windows-sha256.md
 ```
@@ -113,12 +120,59 @@ storage location/type, power source, battery delta where meaningful, and any
 thermal or cancellation observation alongside target results. Do not use real
 media.
 
+The platform is an explicit input; reports never infer it from a device label.
+Use `--os-label`, `--architecture`, and `--runtime-label` when automatic runtime
+values do not contain the exact environment string needed for evidence. Missing
+memory, battery/power, thermal, and cancellation measurements are recorded as
+`not captured by this benchmark` unless an explicit observation option is
+provided.
+
+After sanitizing a target result, regenerate its Markdown without rerunning the
+benchmark:
+
+```sh
+python3 spikes/shared-core-foundations/scripts/harness.py hash-report \
+  --json-input spikes/shared-core-foundations/results/android-internal-sha256.json \
+  --markdown-output spikes/shared-core-foundations/results/local-regenerated.md
+```
+
 The benchmark streams SHA-256 input in bounded chunks. Files are generated one
 at a time under an automatically disposed system temporary directory and are
 deleted before the next size. Output files are atomically promoted only after
 all runs succeed. `Ctrl+C` may stop the run without modifying tracked evidence.
 A digest is integrity evidence; it is never used as a Track ID or as automatic
 logical-identity evidence.
+
+## Safe storage capability probe
+
+The storage probe is a separate, explicit target command. It is not included in
+`verify`, `run-all.sh`, or CI. Run this consolidated form only after replacing
+the target-root placeholder with an intentionally selected parent directory:
+
+```sh
+python3 spikes/shared-core-foundations/scripts/harness.py storage-probe \
+  --target-root "/explicit/selected/parent" \
+  --storage-context portable-sd-raw-path \
+  --target-label portable-sd-volume \
+  > spikes/shared-core-foundations/results/local-android-storage-probe.json
+```
+
+Choose the explicit context from `termux-private-internal`,
+`android-shared-internal`, `portable-sd-raw-path`, or `app-saf`. These names
+deliberately distinguish Termux-private storage, Android shared internal
+storage, raw mounted-card access, and a future app-level Storage Access
+Framework run. Raw-path success is not evidence of persisted SAF permission.
+
+The selected root is used only as a parent. The probe refuses a filesystem
+root, the user's home directory, and the repository root; creates a uniquely
+named empty child; never enumerates or modifies other entries in the selected
+parent; and writes deterministic synthetic bytes only within that child. It
+tests write/read/hash, file and directory `fsync`, ordinary rename,
+`os.replace`, case-distinct names, symlinks, streaming reads, and cleanup.
+Unavailable filesystem capabilities are observations rather than automatic
+product failures. On success the child is removed. On failure or interruption,
+stderr identifies its sanitized child name so it can be removed manually from
+the already known selected root.
 
 ## Layout
 
@@ -142,4 +196,3 @@ sidecar shape in [`EXPERIMENTAL_SIDECAR_FORMAT.md`](EXPERIMENTAL_SIDECAR_FORMAT.
   are ignored by Git.
 - The Ubuntu CI job is evidence about Ubuntu only. It makes no Android or
   Windows compatibility claim.
-

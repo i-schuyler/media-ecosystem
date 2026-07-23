@@ -3,4 +3,4 @@
 This package is experimental evidence code, not a production core.
 """
 
-__all__ = ["events", "hashbench", "paths", "sidecars", "snapshots"]
+__all__ = ["events", "hashbench", "paths", "sidecars", "snapshots", "storageprobe"]

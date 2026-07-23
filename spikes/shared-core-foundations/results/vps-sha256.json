@@ -3,6 +3,7 @@
     "architecture": "x86_64",
     "device_label": "vps-linux-x86_64",
     "os": "Linux 5.15.0-185-generic",
+    "platform": "vps",
     "runtime": "Python 3.12.13"
   },
   "generated_at_utc": "2026-07-23T00:18:20.010042+00:00",
