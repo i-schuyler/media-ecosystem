@@ -26,9 +26,11 @@ Repository work also follows the durable [agent instructions](AGENTS.md).
 
 ## Current phase
 
-The product contract and initial guardrails are established. Phase 0 is being
-completed with licensing and evidence-planning infrastructure before Phase 1
-capability proofs begin. No production technology stack has been selected.
+Phase 0 is complete and Phase 1 capability proofs are active. The disposable
+[shared-core foundations harness](spikes/shared-core-foundations/README.md) and
+[evidence index](docs/spikes/phase-1/shared-core-foundations/README.md) cover the
+VPS evidence and target-device follow-up for issues #6 through #10. Phase 1 is
+not complete, and no production technology stack has been selected.
 
 ## License
 
