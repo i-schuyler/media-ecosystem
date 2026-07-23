@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -96,6 +97,24 @@ class HashBenchmarkTests(unittest.TestCase):
         report = hashbench.render_markdown(result)
         self.assertIn("Experimental Windows evidence only", report)
         self.assertNotIn("Experimental VPS evidence only", report)
+
+    def test_committed_reports_regenerate_from_recorded_platform_inputs(self):
+        results_root = Path(__file__).resolve().parents[1] / "results"
+        for stem, expected_scope in (
+            ("vps-sha256", "VPS"),
+            ("android-internal-sha256", "Android"),
+            ("android-portable-sd-sha256", "Android"),
+        ):
+            with self.subTest(stem=stem):
+                result = json.loads(
+                    (results_root / f"{stem}.json").read_text(encoding="utf-8")
+                )
+                report = (results_root / f"{stem}.md").read_text(encoding="utf-8")
+                self.assertEqual(hashbench.render_markdown(result), report)
+                self.assertIn(f"Experimental {expected_scope} evidence only", report)
+                if expected_scope != "VPS":
+                    self.assertNotIn("not available on this VPS", report)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,0 +1,91 @@
+{
+  "environment": {
+    "architecture": "aarch64",
+    "device_label": "android-galaxy-tab-s10-fe-5g-sdcard",
+    "device_model": "Samsung Galaxy Tab S10 FE 5G",
+    "filesystem": {
+      "available_at_test": "approximately 24 GB",
+      "reported_block_size_bytes": 131072,
+      "total": "approximately 59 GB",
+      "type": "fuse"
+    },
+    "kernel": "6.6.102-android15-8-abX528USQU9CZE9-4k",
+    "os": "Android 16",
+    "os_build": "BP4A.251205.006.X528USQU9CZE9",
+    "platform": "android",
+    "runtime": "Python 3.14.6",
+    "storage_context": "portable SD raw-path access through Termux",
+    "volume_label": "portable-sd-volume"
+  },
+  "observations": {
+    "battery": {
+      "after": {
+        "charge_counter": 4086450,
+        "percentage": 40,
+        "plugged": "UNPLUGGED",
+        "status": "DISCHARGING",
+        "temperature_celsius": 33.9
+      },
+      "before": {
+        "charge_counter": 4096540,
+        "percentage": 40,
+        "plugged": "UNPLUGGED",
+        "status": "DISCHARGING",
+        "temperature_celsius": 33.9
+      }
+    },
+    "case_distinct_names": {
+      "coexisted": false,
+      "scope": "Android-exposed FUSE mount"
+    },
+    "cleanup": {
+      "disposable_probe_directory_removed": true,
+      "repository_clean_after": true
+    },
+    "directory_fsync": {
+      "returned_successfully": true
+    },
+    "ordinary_rename": {
+      "passed": true
+    },
+    "replacement": {
+      "passed": true,
+      "primitive": "os.replace"
+    },
+    "streaming_read": {
+      "elapsed_seconds": 0.004109,
+      "passed": true,
+      "sha256": "d7d2265eefa05e740f1a12f20289d066049e728d419d6e645716017aff984373"
+    },
+    "symlink": {
+      "errno": "EACCES",
+      "error_kind": "PermissionError",
+      "supported": false
+    },
+    "target_root": {
+      "disposable_child_created": true,
+      "readable": true,
+      "writable": true
+    },
+    "write_read_fsync_hash": {
+      "passed": true,
+      "sha256": "2b07811057df887086f06a67edc6ebf911de8b6741156e7a2eb1416a4b8b1b2e",
+      "size_bytes": 4194304
+    }
+  },
+  "provenance": {
+    "operator_summary_fields": [
+      "disposable probe directory removed",
+      "repository remained clean"
+    ],
+    "raw_probe_filename": "filesystem-probe.json",
+    "source_manifest_sha256": "297ab977d4968428ce5cfbac716c9b7e24c6695f3984422356334bdf16e1d6b7"
+  },
+  "schema_version": 1,
+  "scope_limits": {
+    "android_application_saf_permission": "not tested",
+    "controller_or_power_loss_durability": "not proven by successful fsync calls",
+    "physical_media_removal_during_active_writes": "not performed",
+    "sudden_power_loss": "not performed"
+  }
+}
