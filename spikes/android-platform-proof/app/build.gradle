@@ -1,0 +1,73 @@
+plugins {
+    id "com.android.application"
+}
+
+def sourceCommit = providers.environmentVariable("SOURCE_COMMIT").getOrElse("uncommitted-local-build")
+
+android {
+    namespace = "org.mediaecosystem.experimental.platformproof"
+    compileSdk = 36
+
+    defaultConfig {
+        applicationId = "org.mediaecosystem.experimental.phase1platformproof"
+        // This disposable proof targets the Phase 1 Android 16 tablet, not a
+        // production compatibility floor. API 33 keeps the diagnostic code on
+        // the current notification/media-service contract without implying a
+        // future application minimum.
+        minSdk = 33
+        targetSdk = 36
+        versionCode = 1
+        versionName = "0.1.0-proof"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "SOURCE_COMMIT", "\"${sourceCommit}\""
+        buildConfigField "String", "MEDIA3_VERSION", "\"1.10.1\""
+        buildConfigField "String", "EVIDENCE_SCHEMA_VERSION", "\"1.0.0\""
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
+        release {
+            minifyEnabled = false
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
+    lint {
+        abortOnError = true
+        checkDependencies = true
+        htmlReport = true
+        xmlReport = true
+    }
+}
+
+dependencies {
+    implementation "androidx.media3:media3-exoplayer:1.10.1"
+    implementation "androidx.media3:media3-session:1.10.1"
+
+    testImplementation "junit:junit:4.13.2"
+}
+
+tasks.register("verifyFixtureManifest", Exec) {
+    workingDir = rootProject.projectDir
+    commandLine "python3", "scripts/verify_fixtures.py"
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("verifyFixtureManifest")
+}

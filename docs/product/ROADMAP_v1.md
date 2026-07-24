@@ -47,6 +47,14 @@ crash/power/removal durability, and #10 remains open for Android memory and
 cancellation resources. Persisted app-level SAF access is also unproven. This
 evidence does not satisfy the Phase 1 exit gate or select the production stack.
 
+The disposable
+[Android platform proof](../../spikes/android-platform-proof/README.md) now
+provides the synthetic fixtures, guided app, evidence schema/export, safe
+cleanup, host tests, and CI needed for issues #2, #3, and the Android half of
+#5. Its [reports](../spikes/phase-1/android-platform-proof/README.md) remain at
+**tooling ready; device evidence pending**. APK build success alone satisfies
+none of those issue exit criteria.
+
 Prove the highest-risk capabilities before choosing the production stack:
 
 - Android SD-card root access and durable permissions

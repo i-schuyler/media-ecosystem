@@ -15,7 +15,7 @@ git diff --check "$diff_range"
 media_files="$({
   git ls-files |
     grep -Ei '\.(mp3|flac|m4a|aac|ogg|oga|wav|aiff|aif|alac|wma|opus|mp4|mkv|webm)$' |
-    grep -Ev '^fixtures/synthetic-library/'
+    grep -Ev '^fixtures/synthetic-library/|^spikes/android-platform-proof/app/src/main/assets/fixtures/'
 } || true)"
 
 sensitive_files="$({
@@ -29,6 +29,15 @@ if [[ -n "$prohibited_files" ]]; then
   echo "Prohibited files are tracked:"
   echo "$prohibited_files"
   exit 1
+fi
+
+android_proof_media="$({
+  git ls-files 'spikes/android-platform-proof/app/src/main/assets/fixtures/*' |
+    grep -Ei '\.(mp3|flac|m4a|ogg|wav|aiff)$'
+} || true)"
+
+if [[ -n "$android_proof_media" ]]; then
+  python3 spikes/android-platform-proof/scripts/verify_fixtures.py
 fi
 
 # Split sensitive examples so this script scans itself without matching its

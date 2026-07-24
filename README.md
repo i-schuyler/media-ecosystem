@@ -33,7 +33,12 @@ VPS evidence and completed Android internal/removable-storage and Windows
 internal-NTFS observations for issues #6 through #10. Portable paths (#6) and
 identity sidecars (#7) have evidenced their existing exit criteria; durability,
 remaining Android resources, app-level SAF, playback, codecs, and architecture
-comparison remain. Phase 1 is not complete, and no production technology stack
+comparison remain. The disposable
+[Android platform proof](spikes/android-platform-proof/README.md) and its
+[pending-evidence index](docs/spikes/phase-1/android-platform-proof/README.md)
+prepare guided SAF, background-playback/system-control, and eight-format
+collection for issues #2, #3, and #5. That tooling does not establish physical
+device results. Phase 1 is not complete, and no production technology stack
 has been selected.
 
 ## License
