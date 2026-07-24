@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://media-ecosystem.invalid/schema/android-platform-proof-evidence-v1.json",
+  "title": "Disposable Android platform proof evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "proof_app",
+    "environment",
+    "fixture_manifest_sha256",
+    "session_timing",
+    "storage",
+    "playback",
+    "format_matrix",
+    "physical_actions",
+    "errors",
+    "cleanup"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "proof_app": {
+      "type": "object",
+      "required": ["version", "source_commit", "build_variant", "dependencies"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "source_commit": { "type": "string" },
+        "build_variant": { "type": "string" },
+        "dependencies": { "type": "object" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["android_release", "android_build", "device_model", "architecture"],
+      "additionalProperties": false,
+      "properties": {
+        "android_release": { "type": "string" },
+        "android_build": { "type": "string" },
+        "device_model": { "type": "string" },
+        "architecture": { "type": "string" }
+      }
+    },
+    "fixture_manifest_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "session_timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "started_wall_time_utc",
+        "started_elapsed_realtime_ms",
+        "ended_wall_time_utc",
+        "ended_elapsed_realtime_ms",
+        "total_monotonic_duration_ms"
+      ],
+      "properties": {
+        "started_wall_time_utc": { "type": "string" },
+        "started_elapsed_realtime_ms": { "type": "integer", "minimum": 0 },
+        "ended_wall_time_utc": { "type": "string" },
+        "ended_elapsed_realtime_ms": { "type": "integer", "minimum": 0 },
+        "total_monotonic_duration_ms": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "storage": { "type": "object" },
+    "playback": { "type": "object" },
+    "format_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fixture_id", "disposition"],
+        "properties": {
+          "fixture_id": { "type": "string" },
+          "disposition": {
+            "enum": ["passed", "failed", "inconclusive", "not run"]
+          }
+        }
+      }
+    },
+    "physical_actions": { "type": "array" },
+    "errors": { "type": "array" },
+    "cleanup": { "type": "object" }
+  }
+}
