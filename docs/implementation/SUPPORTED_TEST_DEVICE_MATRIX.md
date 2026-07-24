@@ -31,6 +31,14 @@ portable-SD FUSE mount; see the
 production runtime contract. Raw-path access does not establish persisted
 application access through the Storage Access Framework.
 
+The disposable
+[Android platform proof](../../spikes/android-platform-proof/README.md) is
+prepared to collect the missing app-level SAF, background playback/system
+controls, and required-format evidence on this exact tablet. Its
+[evidence index](../spikes/phase-1/android-platform-proof/README.md) remains
+**tooling ready; device evidence pending**. The APK, host tests, and CI do not
+broaden support or satisfy any physical row below.
+
 The 2026-07-23 Windows shared-core run records Microsoft Surface Book 3,
 Windows 11 Pro 25H2 version `10.0.26200` / build `26200.8894`, 64-bit NTFS,
 Windows PowerShell Desktop 5.1.26100.8894, and CPython 3.14.3. It covers the

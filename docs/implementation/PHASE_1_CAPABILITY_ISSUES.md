@@ -27,6 +27,15 @@ design. Python 3.14.6 on Android and 3.14.3 on Windows are experimental
 compatibility observations, not production runtime requirements. Phase 1
 remains active, and catalog item 10 / GitHub issue #11 remains pending.
 
+The disposable
+[Android platform proof](../../spikes/android-platform-proof/README.md) now
+prepares the app-level SAF lifecycle, Media3 playback/session, eight-format
+runner, and sanitized ZIP collection for GitHub issues #2, #3, and #5. Its
+[evidence index](../spikes/phase-1/android-platform-proof/README.md) records
+tooling ready and physical-device evidence pending. No build or JVM test is
+reported as platform evidence, all three issues remain open, and no production
+candidate is selected.
+
 ## 1. Prove Android SD-card root access and persisted permission.
 
 - **Purpose:** Establish that the Android validation device can safely retain
@@ -47,6 +56,9 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   relink restores access without unsafe inference.
 - **Expected ADR or follow-up artifact:** Storage-access evidence report and a
   storage API input to the later stack-selection ADR.
+- **Current status:** Disposable guided tooling is ready; Samsung tablet
+  lifecycle evidence is pending. See the
+  [issue #2 report](../spikes/phase-1/android-platform-proof/issue-2-saf-storage.md).
 
 ## 2. Prove Android background playback and system media controls.
 
@@ -68,6 +80,9 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   reliably operate the candidate during the tested lifecycle transitions.
 - **Expected ADR or follow-up artifact:** Android playback evidence report and
   candidate comparison input for the stack-selection ADR.
+- **Current status:** Disposable Media3 candidate tooling is ready; physical
+  background/system-control evidence is pending. See the
+  [issue #3 report](../spikes/phase-1/android-platform-proof/issue-3-background-playback.md).
 
 ## 3. Prove Windows playback and system media controls.
 
@@ -107,6 +122,9 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   weakening PB-01.
 - **Expected ADR or follow-up artifact:** Cross-platform format report and any
   codec/playback limitations for the stack-selection ADR.
+- **Current status:** The synthetic eight-format Android runner is ready, but
+  Android decoder evidence and the entire Windows half remain pending. See the
+  [Android issue #5 report](../spikes/phase-1/android-platform-proof/issue-5-android-formats.md).
 
 ## 5. Prove portable root-relative path normalization.
 
