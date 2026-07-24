@@ -1,0 +1,83 @@
+name: Android platform proof tooling
+
+on:
+  pull_request:
+    paths:
+      - ".github/scripts/check-foundation.sh"
+      - ".github/workflows/android-platform-proof.yml"
+      - "spikes/android-platform-proof/**"
+      - "docs/spikes/phase-1/android-platform-proof/**"
+      - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/scripts/check-foundation.sh"
+      - ".github/workflows/android-platform-proof.yml"
+      - "spikes/android-platform-proof/**"
+      - "docs/spikes/phase-1/android-platform-proof/**"
+      - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+
+permissions:
+  contents: read
+
+jobs:
+  tooling:
+    name: Build disposable proof APK
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: spikes/android-platform-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle and validate wrapper
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install pinned Android SDK components
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Verify synthetic fixture provenance and hashes
+        run: python3 scripts/verify_fixtures.py
+
+      - name: Run unit tests, lint, and debug assembly
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+        run: >-
+          ./gradlew --no-daemon --no-configuration-cache
+          :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+
+      - name: Verify packaged proof corpus and absence of signing material
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/verify_apk.py app/build/outputs/apk/debug/app-debug.apk
+          if find . -type f \
+            \( -name '*.jks' -o -name '*.keystore' -o -name '*.p12' \
+            -o -name '*.pfx' -o -name '*.pem' -o -name '*.key' \) \
+            -print -quit | grep -q .; then
+            echo "Signing or private-key material found in proof workspace." >&2
+            exit 1
+          fi
+          sha256sum app/build/outputs/apk/debug/app-debug.apk
+          echo "APK build success is tooling evidence only; it does not prove device behavior."
+
+      - name: Upload installable debug proof APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: disposable-android-platform-proof-debug
+          path: spikes/android-platform-proof/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
