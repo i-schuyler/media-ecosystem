@@ -20,7 +20,8 @@ harness, non-elevated internal-NTFS behavior, SHA-256 CPU/memory/power/thermal
 availability, and automated cancellation. Existing exit criteria for #6 and
 #7 are evidenced and those issues are closed. Issues #8 and #10 remain open for
 real crash/power/removal durability and remaining Android resources
-respectively. App-level Android SAF persistence also remains pending. Raw
+respectively. App-level Android SAF persistence is partly evidenced, but issue
+#2 remains open for an actual unavailable transition and safe relink proof. Raw
 Termux path access is not SAF access. The event reference-model proof is fully
 evidenced and issue #9 is closed, but it is not a production synchronization
 design. Python 3.14.6 on Android and 3.14.3 on Windows are experimental
@@ -28,15 +29,17 @@ compatibility observations, not production runtime requirements. Phase 1
 remains active, and catalog item 10 / GitHub issue #11 remains pending.
 
 The disposable
-[Android platform proof](../../spikes/android-platform-proof/README.md) now
-records verified partial physical evidence from a historical eight-format run
-for GitHub issues #2, #3, and #5. The active 2026-07-28 v1 contract is exactly
-six formats; ALAC and AIFF remain preserved as nonrequired historical
-observations. Persisted SAF access, reboot marker access, five required-format
-passes, and acknowledged media-control/interruption observations are recorded.
-The five-minute screen-off interval and corrected WAV retest remain. All three
-issues remain open, build success is not physical evidence, and no production
-candidate is selected.
+[Android platform proof](../../spikes/android-platform-proof/README.md) records
+verified physical evidence from the 2026-07-24 initial run and 2026-07-28
+targeted retest for GitHub issues #2, #3, and #5. The active v1 contract is
+exactly six formats; ALAC and AIFF remain preserved as nonrequired historical
+observations. Persisted SAF access and reboot marker access are recorded,
+continuous screen-off playback completed for 888,433 ms against the required
+300,000 ms minimum, the required system-control/interruption dimensions were
+acknowledged, and all six active formats pass on Android. Issue #3 is closed.
+Issue #2 remains open for an actual unavailable/removal/relink path, and issue
+#5 remains open for the exact six-format Windows matrix. Build success is not
+physical evidence, and no production candidate is selected.
 
 ## 1. Prove Android SD-card root access and persisted permission.
 
@@ -85,10 +88,11 @@ candidate is selected.
   reliably operate the candidate during the tested lifecycle transitions.
 - **Expected ADR or follow-up artifact:** Android playback evidence report and
   candidate comparison input for the stack-selection ADR.
-- **Current status:** Notification, lock-screen, hardware-button, audio-focus,
-  and becoming-noisy observations are acknowledged in verified tablet
-  evidence. The screen-off interval was only 137 ms, not the required 300,000
-  ms, so the issue remains open pending the targeted retest. See the
+- **Current status:** Verified combined tablet evidence records notification,
+  lock-screen, hardware-button, audio-focus, and becoming-noisy observations,
+  plus 888,433 ms of continuous screen-off playback against the required
+  300,000 ms minimum. The existing exit criteria are satisfied for this
+  disposable candidate and GitHub issue #3 is closed. See the
   [issue #3 report](../spikes/phase-1/android-platform-proof/issue-3-background-playback.md).
 
 ## 3. Prove Windows playback and system media controls.
@@ -130,13 +134,12 @@ candidate is selected.
   weakening PB-01.
 - **Expected ADR or follow-up artifact:** Cross-platform format report and any
   codec/playback limitations for the stack-selection ADR.
-- **Current status:** Verified historical Android evidence records passes for
-  MP3 V0, MP3 320, FLAC, AAC, and Ogg Vorbis. WAV opened, prepared, played,
-  advanced, sought, and reported the expected duration, but the original
-  harness conflated optional metadata with playback/end disposition; a
-  corrected targeted WAV retest remains. Historical ALAC and AIFF observations
-  are preserved outside active v1 scope. The entire six-format Windows half
-  remains pending. See the
+- **Current status:** Verified combined Android evidence records passes for MP3
+  V0, MP3 320, FLAC, AAC, Ogg Vorbis, and corrected WAV open/prepare/start,
+  advancement, seek, duration, and end-of-track. Optional WAV metadata remains
+  separate and is not required by PB-01. Historical ALAC and AIFF observations
+  are preserved outside active v1 scope. The Android half is complete; the
+  entire exact six-format Windows half remains pending. See the
   [Android issue #5 report](../spikes/phase-1/android-platform-proof/issue-5-android-formats.md).
 
 ## 5. Prove portable root-relative path normalization.
