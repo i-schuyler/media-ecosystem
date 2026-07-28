@@ -31,6 +31,20 @@ These instructions apply to the entire repository.
   and other GitHub state. Confirm results instead of assuming a push or
   workflow succeeded.
 
+## User-facing terminal safety
+
+- Separate commands by environment: Termux dashboard / Android tablet,
+  dedicated Heartloom VPS session, and Windows PowerShell.
+- Commands pasted into an existing interactive shell or tmux pane must not use
+  top-level `set -e`, `set -u`, `set -o pipefail`, `exit`, `exec`, or `return`;
+  a failure must return control to that shell.
+- Prefer short, idempotent, independently rerunnable stages. Do not launch
+  Codex through nested SSH from Termux when a dedicated Heartloom VPS session
+  is available.
+- Strict shell mode is acceptable only inside a reviewed executable child
+  script whose failure cannot terminate the caller and whose diagnostics are
+  preserved.
+
 ## Safety and privacy
 
 - Never commit real audio, listening history, credentials, OAuth material,

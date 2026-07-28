@@ -92,3 +92,7 @@ obj/
 # A future synthetic fixture policy may explicitly allow tiny,
 # generated or redistributable files under this directory.
 !fixtures/synthetic-library/**
+
+# Exact, manifest-covered Phase 1 Android proof corpus. Foundation guardrails
+# independently enforce provenance, hashes, membership, and size limits.
+!spikes/android-platform-proof/app/src/main/assets/fixtures/**

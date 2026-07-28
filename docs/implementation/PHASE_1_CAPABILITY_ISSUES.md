@@ -20,12 +20,26 @@ harness, non-elevated internal-NTFS behavior, SHA-256 CPU/memory/power/thermal
 availability, and automated cancellation. Existing exit criteria for #6 and
 #7 are evidenced and those issues are closed. Issues #8 and #10 remain open for
 real crash/power/removal durability and remaining Android resources
-respectively. App-level Android SAF persistence also remains pending. Raw
+respectively. App-level Android SAF persistence is partly evidenced, but issue
+#2 remains open for an actual unavailable transition and safe relink proof. Raw
 Termux path access is not SAF access. The event reference-model proof is fully
 evidenced and issue #9 is closed, but it is not a production synchronization
 design. Python 3.14.6 on Android and 3.14.3 on Windows are experimental
 compatibility observations, not production runtime requirements. Phase 1
 remains active, and catalog item 10 / GitHub issue #11 remains pending.
+
+The disposable
+[Android platform proof](../../spikes/android-platform-proof/README.md) records
+verified physical evidence from the 2026-07-24 initial run and 2026-07-28
+targeted retest for GitHub issues #2, #3, and #5. The active v1 contract is
+exactly six formats; ALAC and AIFF remain preserved as nonrequired historical
+observations. Persisted SAF access and reboot marker access are recorded,
+continuous screen-off playback completed for 888,433 ms against the required
+300,000 ms minimum, the required system-control/interruption dimensions were
+acknowledged, and all six active formats pass on Android. Issue #3 is closed.
+Issue #2 remains open for an actual unavailable/removal/relink path, and issue
+#5 remains open for the exact six-format Windows matrix. Build success is not
+physical evidence, and no production candidate is selected.
 
 ## 1. Prove Android SD-card root access and persisted permission.
 
@@ -47,6 +61,12 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   relink restores access without unsafe inference.
 - **Expected ADR or follow-up artifact:** Storage-access evidence report and a
   storage API input to the later stack-selection ADR.
+- **Current status:** Verified Samsung evidence records persisted read/write
+  permission and marker access after reboot. Physical removal/reinsertion,
+  provider unavailability, revocation, and explicit relink were unperformed on
+  the primary tablet, whose shared tray is effectively permanent in ordinary
+  use. The issue remains open; future safe alternatives are documented. See the
+  [issue #2 report](../spikes/phase-1/android-platform-proof/issue-2-saf-storage.md).
 
 ## 2. Prove Android background playback and system media controls.
 
@@ -68,6 +88,12 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   reliably operate the candidate during the tested lifecycle transitions.
 - **Expected ADR or follow-up artifact:** Android playback evidence report and
   candidate comparison input for the stack-selection ADR.
+- **Current status:** Verified combined tablet evidence records notification,
+  lock-screen, hardware-button, audio-focus, and becoming-noisy observations,
+  plus 888,433 ms of continuous screen-off playback against the required
+  300,000 ms minimum. The existing exit criteria are satisfied for this
+  disposable candidate and GitHub issue #3 is closed. See the
+  [issue #3 report](../spikes/phase-1/android-platform-proof/issue-3-background-playback.md).
 
 ## 3. Prove Windows playback and system media controls.
 
@@ -92,8 +118,9 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
 
 - **Purpose:** Verify that every v1 required audio format plays on both primary
   validation devices.
-- **In scope:** MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, ALAC, WAV, and AIFF;
-  open, play, seek, duration, end-of-track, and basic metadata observations.
+- **In scope:** MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV;
+  open, play, seek, duration, and end-of-track checks, with basic metadata
+  recorded as a separate optional observation.
 - **Out of scope:** Codec implementation, transcoding, streaming services,
   gapless playback, ReplayGain, and unlisted formats.
 - **Relevant DoD sections:** Required formats; Playback.
@@ -107,6 +134,13 @@ remains active, and catalog item 10 / GitHub issue #11 remains pending.
   weakening PB-01.
 - **Expected ADR or follow-up artifact:** Cross-platform format report and any
   codec/playback limitations for the stack-selection ADR.
+- **Current status:** Verified combined Android evidence records passes for MP3
+  V0, MP3 320, FLAC, AAC, Ogg Vorbis, and corrected WAV open/prepare/start,
+  advancement, seek, duration, and end-of-track. Optional WAV metadata remains
+  separate and is not required by PB-01. Historical ALAC and AIFF observations
+  are preserved outside active v1 scope. The Android half is complete; the
+  entire exact six-format Windows half remains pending. See the
+  [Android issue #5 report](../spikes/phase-1/android-platform-proof/issue-5-android-formats.md).
 
 ## 5. Prove portable root-relative path normalization.
 

@@ -12,7 +12,7 @@ documented validation matrix and release environment.
 | ID-03 | Missing evidence | A file without deterministic identity evidence is never silently merged. |
 | FS-01 | Explorer access | Indexed files remain browseable and openable in Android and Windows file explorers. |
 | FS-02 | Unmounted root | Removing storage marks items unavailable and creates no delete operations. |
-| PB-01 | Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, ALAC, WAV, and AIFF play on both platforms. |
+| PB-01 | Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV play on both platforms. |
 | PB-02 | Background | Android playback continues screen-off and exposes media controls. |
 | PB-03 | Queue | Queue, current track, position, shuffle, and repeat survive restart. |
 | PB-04 | Clear Queue | Clear Queue works and Undo restores the prior queue. |

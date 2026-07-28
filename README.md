@@ -30,11 +30,22 @@ Phase 0 is complete and Phase 1 capability proofs are active. The disposable
 [shared-core foundations harness](spikes/shared-core-foundations/README.md) and
 [evidence index](docs/spikes/phase-1/shared-core-foundations/README.md) cover the
 VPS evidence and completed Android internal/removable-storage and Windows
-internal-NTFS observations for issues #6 through #10. Portable paths (#6) and
-identity sidecars (#7) have evidenced their existing exit criteria; durability,
-remaining Android resources, app-level SAF, playback, codecs, and architecture
-comparison remain. Phase 1 is not complete, and no production technology stack
-has been selected.
+internal-NTFS observations for issues #6 through #10. Portable paths (#6),
+identity sidecars (#7), and the event reference model (#9) have evidenced their
+existing exit criteria; durability, remaining Android resources, app-level SAF,
+Windows playback, Windows codecs, and architecture comparison remain.
+
+The disposable
+[Android platform proof](spikes/android-platform-proof/README.md) and its
+[evidence index](docs/spikes/phase-1/android-platform-proof/README.md) record
+verified Samsung-tablet evidence for issues #2, #3, and the Android half of #5.
+Persisted SAF read/write permission and marker access survived reboot. Android
+background/system-control evidence satisfies issue #3 for this disposable
+candidate, and all six amended v1 formats—MP3 V0, MP3 320, FLAC, AAC, Ogg
+Vorbis, and WAV—pass on Android. Issue #2 remains open for an actual unavailable
+transition and safe relink evidence; issue #5 remains open for the exact
+six-format Windows matrix. Phase 1 is not complete, and no production
+technology stack has been selected.
 
 ## License
 

@@ -31,5 +31,4 @@ for duplicate review. A modeled media replacement keeps Track ID only when the
 caller explicitly authorizes replacement and supplies a new File Instance ID.
 
 Embedded identity tags remain a later proof area. This sidecar experiment says
-nothing about safe tag round trips for MP3, FLAC, AAC, Ogg Vorbis, ALAC, WAV, or
-AIFF.
+nothing about safe tag round trips for MP3, FLAC, AAC, Ogg Vorbis, or WAV.
