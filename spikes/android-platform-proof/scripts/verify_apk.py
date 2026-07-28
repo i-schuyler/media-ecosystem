@@ -20,19 +20,25 @@ def main() -> None:
         "assets/fixtures/flac.flac",
         "assets/fixtures/aac.m4a",
         "assets/fixtures/ogg-vorbis.ogg",
-        "assets/fixtures/alac.m4a",
         "assets/fixtures/wav.wav",
-        "assets/fixtures/aiff.aiff",
         "assets/fixtures/fixture-manifest.json",
         "assets/fixtures/SHA256SUMS",
         "assets/evidence/evidence-schema-v1.json",
+        "assets/evidence/evidence-schema-v1.1.json",
     }
     with zipfile.ZipFile(args.apk) as archive:
         names = set(archive.namelist())
         missing = required - names
         assert not missing, f"APK missing entries: {sorted(missing)}"
         manifest = json.loads(archive.read("assets/fixtures/fixture-manifest.json"))
-        assert len(manifest["fixtures"]) == 8
+        assert manifest["format_contract"]["active_required_count"] == 6
+        assert len(manifest["fixtures"]) == 6
+        assert {
+            entry["id"] for entry in manifest["fixtures"]
+        } == {"mp3-v0", "mp3-320", "flac", "aac", "ogg-vorbis", "wav"}
+        assert not {
+            "alac", "aiff"
+        } & {entry["id"] for entry in manifest["fixtures"]}
         expected_audio = {
             f"assets/fixtures/{entry['filename']}" for entry in manifest["fixtures"]
         }

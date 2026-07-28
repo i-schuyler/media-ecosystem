@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
+import org.mediaecosystem.experimental.platformproof.fixtures.FormatContract;
 
 public final class ManifestAndEvidenceContractTest {
     private static final Path FIXTURES = Paths.get("src/main/assets/fixtures");
@@ -28,7 +29,7 @@ public final class ManifestAndEvidenceContractTest {
                     + "\\\"sha256\\\"\\s*:\\s*\\\"([0-9a-f]{64})\\\"");
 
     @Test
-    public void manifestContainsAllEightFormatsExactlyOnceWithMatchingHashes() throws Exception {
+    public void manifestContainsExactlySixActiveFormatsWithMatchingHashes() throws Exception {
         String manifest = new String(
                 Files.readAllBytes(FIXTURES.resolve("fixture-manifest.json")),
                 StandardCharsets.UTF_8);
@@ -39,10 +40,10 @@ public final class ManifestAndEvidenceContractTest {
             filenames.put(matcher.group(2), matcher.group(1));
             hashes.put(matcher.group(2), matcher.group(3));
         }
-        assertEquals(Set.of(
-                "mp3-v0", "mp3-320", "flac", "aac",
-                "ogg-vorbis", "alac", "wav", "aiff"), filenames.keySet());
-        assertEquals(8, new HashSet<>(filenames.values()).size());
+        assertEquals(Set.copyOf(FormatContract.REQUIRED_IDS), filenames.keySet());
+        assertEquals(6, new HashSet<>(filenames.values()).size());
+        assertFalse(filenames.keySet().contains("alac"));
+        assertFalse(filenames.keySet().contains("aiff"));
         for (String id : filenames.keySet()) {
             assertEquals(hashes.get(id), sha256(FIXTURES.resolve(filenames.get(id))));
         }
@@ -52,21 +53,42 @@ public final class ManifestAndEvidenceContractTest {
 
     @Test
     public void evidenceSchemaHasVersionedRequiredSectionsAndNoPersonalFields() throws IOException {
-        String schema = new String(
+        String historicalSchema = new String(
                 Files.readAllBytes(Paths.get("src/main/assets/evidence/evidence-schema-v1.json")),
+                StandardCharsets.UTF_8);
+        String currentSchema = new String(
+                Files.readAllBytes(Paths.get("src/main/assets/evidence/evidence-schema-v1.1.json")),
                 StandardCharsets.UTF_8);
         for (String required : new String[] {
                 "proof_app", "environment", "fixture_manifest_sha256", "session_timing", "storage",
                 "playback", "format_matrix", "physical_actions", "errors", "cleanup"
         }) {
-            assertTrue(required, schema.contains("\"" + required + "\""));
+            assertTrue(required, historicalSchema.contains("\"" + required + "\""));
+            assertTrue(required, currentSchema.contains("\"" + required + "\""));
         }
+        assertTrue(historicalSchema.contains("\"export\""));
+        assertTrue(currentSchema.contains("\"format_contract\""));
+        assertTrue(currentSchema.contains("\"active_required_count\": { \"const\": 6 }"));
+        assertTrue(currentSchema.contains("\"screen_off_workflow\""));
+        assertTrue(currentSchema.contains("\"export_handoff\""));
         for (String prohibited : EvidencePolicy.PROHIBITED_FIELDS) {
-            assertFalse(prohibited, schema.contains("\"" + prohibited + "\""));
+            assertFalse(prohibited, historicalSchema.contains("\"" + prohibited + "\""));
+            assertFalse(prohibited, currentSchema.contains("\"" + prohibited + "\""));
         }
         for (FormatDisposition disposition : FormatDisposition.values()) {
-            assertTrue(disposition.wireValue(), schema.contains("\"" + disposition.wireValue() + "\""));
+            assertTrue(disposition.wireValue(),
+                    currentSchema.contains("\"" + disposition.wireValue() + "\""));
         }
+    }
+
+    @Test
+    public void formatContractUsesStableIdentifiersAndClassifiesHistoricalFormats() {
+        assertEquals(6, FormatContract.REQUIRED_IDS.size());
+        assertEquals(Set.of("alac", "aiff"),
+                Set.copyOf(FormatContract.HISTORICAL_NONREQUIRED_IDS));
+        assertTrue(FormatContract.isRequired("wav"));
+        assertFalse(FormatContract.isRequired("alac"));
+        assertFalse(FormatContract.isRequired("aiff"));
     }
 
     @Test

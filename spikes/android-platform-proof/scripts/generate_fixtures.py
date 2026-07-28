@@ -13,7 +13,8 @@ import tempfile
 import wave
 from pathlib import Path
 
-SCHEMA_VERSION = "1.0.0"
+SCHEMA_VERSION = "1.1.0"
+FORMAT_CONTRACT_ID = "v1-required-formats-2026-07-28"
 SAMPLE_RATE = 48_000
 CHANNELS = 2
 SAMPLE_WIDTH_BITS = 16
@@ -22,6 +23,7 @@ ARTIST = "Media Ecosystem Synthetic Lab"
 ALBUM = "Disposable Phase 1 Format Proof"
 FFMPEG_SHA256 = "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c"
 LAME_SHA256 = "3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb"
+ZIG_SHA256 = "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
 
 FIXTURES = (
     ("mp3-v0", "MP3 V0", "mp3-v0.mp3", "audio/mpeg", "MP3", "MPEG Layer III", "LAME -V 0"),
@@ -29,9 +31,7 @@ FIXTURES = (
     ("flac", "FLAC", "flac.flac", "audio/flac", "FLAC", "FLAC", "FFmpeg compression_level 8"),
     ("aac", "AAC", "aac.m4a", "audio/mp4", "ISO BMFF/M4A", "AAC-LC", "FFmpeg 192 kbit/s AAC-LC"),
     ("ogg-vorbis", "Ogg Vorbis", "ogg-vorbis.ogg", "audio/ogg", "Ogg", "Vorbis", "FFmpeg quality 6"),
-    ("alac", "ALAC", "alac.m4a", "audio/mp4", "ISO BMFF/M4A", "ALAC", "FFmpeg ALAC"),
     ("wav", "WAV", "wav.wav", "audio/wav", "RIFF/WAVE", "PCM signed 16-bit little-endian", "FFmpeg pcm_s16le"),
-    ("aiff", "AIFF", "aiff.aiff", "audio/aiff", "AIFF", "PCM signed 16-bit big-endian", "FFmpeg pcm_s16be"),
 )
 
 
@@ -113,9 +113,7 @@ def create_outputs(ffmpeg: str, lame: str, output_dir: Path) -> dict:
             "-serial_offset", "424242",
             "-f", "ogg",
         ], "ogg-vorbis.ogg"),
-        "alac": (["-c:a", "alac", "-f", "ipod"], "alac.m4a"),
         "wav": (["-c:a", "pcm_s16le", "-f", "wav"], "wav.wav"),
-        "aiff": (["-c:a", "pcm_s16be", "-f", "aiff"], "aiff.aiff"),
     }
     title_by_id = {fixture_id: f"Synthetic {label}" for fixture_id, label, *_ in FIXTURES}
     for fixture_id, (codec_args, filename) in ffmpeg_jobs.items():
@@ -162,6 +160,13 @@ def create_outputs(ffmpeg: str, lame: str, output_dir: Path) -> dict:
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "provenance": "deterministic synthetic integer triangle-tone sequence; no human recording or personal media",
+        "format_contract": {
+            "id": FORMAT_CONTRACT_ID,
+            "amended_on": "2026-07-28",
+            "active_required_count": len(FIXTURES),
+            "active_required_format_ids": [fixture[0] for fixture in FIXTURES],
+            "historical_nonrequired_format_ids": ["alac", "aiff"],
+        },
         "generator": {
             "script": "scripts/generate_fixtures.py",
             "python": "CPython 3.12.13",
@@ -169,6 +174,31 @@ def create_outputs(ffmpeg: str, lame: str, output_dir: Path) -> dict:
             "ffmpeg_source_sha256": FFMPEG_SHA256,
             "lame": "4.0",
             "lame_source_sha256": LAME_SHA256,
+            "encoder_build": {
+                "compiler": "Zig 0.16.0 clang 21.1.0",
+                "compiler_archive_sha256": ZIG_SHA256,
+                "ffmpeg_configuration": (
+                    "--disable-everything --disable-autodetect --disable-x86asm "
+                    "--disable-doc --disable-debug --disable-network --disable-ffplay "
+                    "--disable-ffprobe --disable-shared --enable-static --enable-ffmpeg "
+                    "--enable-protocol=file --enable-demuxer=wav "
+                    "--enable-decoder=pcm_s16le "
+                    "--enable-encoder=flac,aac,vorbis,pcm_s16le "
+                    "--enable-muxer=flac,ipod,ogg,wav "
+                    "--enable-filter=aresample,aformat,anull "
+                    "--enable-parser=aac,vorbis,flac"
+                ),
+                "ffmpeg_compatibility_override": (
+                    "HAVE_SYSCTL=0 for the Zig-provided Linux headers"
+                ),
+                "lame_configuration": (
+                    "--disable-shared --enable-static --disable-decoder"
+                ),
+                "lame_compatibility_override": (
+                    "DEPRECATED_OR_OBSOLETE_CODE_REMOVED=0 to build the official "
+                    "4.0 frontend's referenced UCS-2 tag functions"
+                ),
+            },
         },
         "source_pcm": {
             "sample_rate_hz": SAMPLE_RATE,
@@ -196,7 +226,7 @@ def verify_reproducible(ffmpeg: str, lame: str, output_dir: Path) -> None:
     actual_hashes = {item["filename"]: item["sha256"] for item in actual["fixtures"]}
     if expected_hashes != actual_hashes:
         raise SystemExit(f"fixture reproduction mismatch: expected={expected_hashes} actual={actual_hashes}")
-    print("Fixture generator reproduced all eight committed hashes.")
+    print("Fixture generator reproduced all six committed hashes.")
 
 
 def main() -> None:

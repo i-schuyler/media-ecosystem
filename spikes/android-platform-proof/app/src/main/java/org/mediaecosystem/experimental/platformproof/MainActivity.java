@@ -7,12 +7,15 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
+import android.provider.DocumentsContract;
+import android.provider.OpenableColumns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,6 +34,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.json.JSONArray;
 import org.mediaecosystem.experimental.platformproof.evidence.EvidenceExporter;
 import org.mediaecosystem.experimental.platformproof.evidence.EvidenceStore;
+import org.mediaecosystem.experimental.platformproof.evidence.ExportDestination;
 import org.mediaecosystem.experimental.platformproof.formats.FormatMatrixRunner;
 import org.mediaecosystem.experimental.platformproof.model.Hashing;
 import org.mediaecosystem.experimental.platformproof.playback.ProofPlaybackService;
@@ -43,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @SuppressLint("SetTextI18n")
@@ -65,6 +70,7 @@ public final class MainActivity extends Activity {
     private MediaController controller;
     private FormatMatrixRunner formatRunner;
     private EvidenceExporter.ExportArtifact pendingExport;
+    private Uri lastSavedExport;
 
     private final Runnable playbackTick = new Runnable() {
         @Override
@@ -77,6 +83,7 @@ public final class MainActivity extends Activity {
                         + "state: " + playerState(controller) + "\n"
                         + "position/duration: " + controller.getCurrentPosition()
                         + " / " + Math.max(0, controller.getDuration()) + " ms\n"
+                        + evidence.screenOffWorkflowStatus() + "\n"
                         + "Media3 candidate 1.10.1; not a production selection");
             }
             handler.postDelayed(this, 1_000);
@@ -182,6 +189,10 @@ public final class MainActivity extends Activity {
         addSection(root, "1. Storage access");
         storageStatus = text("", 14, Color.DKGRAY);
         root.addView(storageStatus, matchWrap());
+        root.addView(text(
+                "The primary tablet's shared SIM/microSD tray is treated as permanent. "
+                        + "Do not remove it for this targeted retest.",
+                14, Color.DKGRAY), matchWrap());
         root.addView(button("Select removable SD root", view ->
                 startActivityForResult(storage.rootPickerIntent(), PICK_ROOT)), matchWrap());
         root.addView(button("Recheck persisted access / reinsertion", view ->
@@ -199,19 +210,25 @@ public final class MainActivity extends Activity {
                     storage.revokePersistedGrantForProof();
                     refreshStorageStatus();
                 })), matchWrap());
-        root.addView(button("Prepare safe SD unmount/removal", view ->
-                prepareSafeRemoval()), matchWrap());
         root.addView(button("Intentional process termination check", view ->
                 terminateForRestartProof()), matchWrap());
 
         addSection(root, "2. Playback lifecycle");
         playbackStatus = text("Connecting to MediaSessionService…", 14, Color.DKGRAY);
         root.addView(playbackStatus, matchWrap());
-        root.addView(button("Start guided playback evidence session", view -> {
-            evidence.append("playback", "guided-session-start", "started",
-                    "required_screen_off_duration_ms=" + ProofPlaybackService.REQUIRED_SCREEN_OFF_MS);
-            play();
-        }), matchWrap());
+        root.addView(text(
+                "Targeted screen-off retest: tap Start, wait until the status says "
+                        + "READY_TO_TURN_SCREEN_OFF, then turn the screen off. Leave it off "
+                        + "for at least five minutes. After returning, the app must show "
+                        + "MINIMUM_REACHED before Complete can succeed. A brief off/on event "
+                        + "remains INCOMPLETE.",
+                14, Color.DKGRAY), matchWrap());
+        root.addView(button("Start five-minute screen-off retest", view ->
+                sendPlaybackProofAction(
+                        ProofPlaybackService.ACTION_START_SCREEN_OFF_PROOF)), matchWrap());
+        root.addView(button("Complete screen-off retest after minimum reached", view ->
+                sendPlaybackProofAction(
+                        ProofPlaybackService.ACTION_COMPLETE_SCREEN_OFF_PROOF)), matchWrap());
         LinearLayout controls = horizontal();
         controls.addView(button("Play", view -> play()));
         controls.addView(button("Pause", view -> withController(Player::pause)));
@@ -224,14 +241,19 @@ public final class MainActivity extends Activity {
                         Math.max(0, player.getDuration()), player.getCurrentPosition() + 2_000)))));
         navigation.addView(button("Next", view -> withController(Player::seekToNextMediaItem)));
         root.addView(navigation, matchWrap());
-        root.addView(button("Acknowledge notification play/pause worked", view ->
-                evidence.acknowledgePhysicalAction("notification_play_pause", true, 0)), matchWrap());
+        root.addView(button("Acknowledge notification play/pause worked", view -> {
+            evidence.acknowledgePhysicalAction("notification_play_pause", true, 0);
+            sendPlaybackProofAction(ProofPlaybackService.ACTION_CONTROLS_EXERCISED);
+        }), matchWrap());
         root.addView(button("Acknowledge lock-screen controls + metadata worked", view -> {
             evidence.acknowledgePhysicalAction("lock_screen_play_pause", true, 0);
             evidence.acknowledgePhysicalAction("lock_screen_metadata", true, 0);
+            sendPlaybackProofAction(ProofPlaybackService.ACTION_CONTROLS_EXERCISED);
         }), matchWrap());
-        root.addView(button("Acknowledge Bluetooth/hardware media button worked", view ->
-                evidence.acknowledgePhysicalAction("hardware_media_button", true, 0)), matchWrap());
+        root.addView(button("Acknowledge Bluetooth/hardware media button worked", view -> {
+            evidence.acknowledgePhysicalAction("hardware_media_button", true, 0);
+            sendPlaybackProofAction(ProofPlaybackService.ACTION_CONTROLS_EXERCISED);
+        }), matchWrap());
         root.addView(button("Acknowledge audio-focus interruption was tested", view ->
                 evidence.acknowledgePhysicalAction("audio_focus_interruption", true, 0)), matchWrap());
         root.addView(button("Acknowledge becoming-noisy behavior was tested", view ->
@@ -239,11 +261,12 @@ public final class MainActivity extends Activity {
 
         addSection(root, "3. Format matrix");
         formatStatus = text(
-                "Not run. Build success is not codec evidence; run this on the physical tablet.",
+                "Targeted retest not run. Five formats already have verified historical Android "
+                        + "passes; this APK retests WAV only.",
                 14, Color.DKGRAY);
         root.addView(formatStatus, matchWrap());
-        root.addView(button("Run all 8 formats with bounded timeouts", view ->
-                runFormatMatrix()), matchWrap());
+        root.addView(button("Run targeted WAV check with bounded timeouts", view ->
+                runWavRetest()), matchWrap());
 
         addSection(root, "4. Evidence");
         evidenceStatus = text(
@@ -251,6 +274,8 @@ public final class MainActivity extends Activity {
                 14, Color.DKGRAY);
         root.addView(evidenceStatus, matchWrap());
         root.addView(button("Export evidence ZIP", view -> beginExport()), matchWrap());
+        root.addView(button("Share last saved evidence ZIP", view ->
+                shareLastSavedExport()), matchWrap());
 
         addSection(root, "5. Cleanup");
         root.addView(text(
@@ -301,13 +326,18 @@ public final class MainActivity extends Activity {
         });
     }
 
-    private void runFormatMatrix() {
+    private void sendPlaybackProofAction(String action) {
+        startService(new Intent(this, ProofPlaybackService.class).setAction(action));
+    }
+
+    private void runWavRetest() {
         withController(Player::pause);
         if (formatRunner != null) {
             Toast.makeText(this, "A format matrix is already active or completed.", Toast.LENGTH_SHORT).show();
             return;
         }
-        formatRunner = new FormatMatrixRunner(this, new FormatMatrixRunner.Listener() {
+        formatRunner = new FormatMatrixRunner(this, List.of("wav"),
+                new FormatMatrixRunner.Listener() {
             @Override
             public void onProgress(String message) {
                 formatStatus.setText(message);
@@ -315,14 +345,14 @@ public final class MainActivity extends Activity {
 
             @Override
             public void onComplete(JSONArray results) {
-                int passed = 0;
+                String disposition = "not run";
                 for (int index = 0; index < results.length(); index++) {
-                    if ("passed".equals(results.optJSONObject(index).optString("disposition"))) {
-                        passed++;
+                    if ("wav".equals(results.optJSONObject(index).optString("fixture_id"))) {
+                        disposition = results.optJSONObject(index).optString("disposition");
                     }
                 }
-                formatStatus.setText("Physical-device format matrix complete: "
-                        + passed + "/8 passed. Export evidence for full dispositions.");
+                formatStatus.setText("Targeted physical-device WAV retest complete: "
+                        + disposition + ". Export evidence for every recorded dimension.");
                 formatRunner = null;
             }
         });
@@ -347,8 +377,23 @@ public final class MainActivity extends Activity {
         if (pendingExport == null) {
             throw new IllegalStateException("No validated export is pending");
         }
+        String providerCategory = ExportDestination.providerCategory(
+                destination.getAuthority(), DocumentsContract.isDocumentUri(this, destination));
+        String returnedName = displayName(destination);
+        boolean proofName = ExportDestination.isProofFilename(returnedName);
+        evidence.recordExportHandoff(
+                "destination-selected-for-validated-export",
+                providerCategory,
+                pendingExport.suggestedName(),
+                proofName);
+        evidence.append("evidence", "export-destination-selected", "observed",
+                "suggested_filename=" + pendingExport.suggestedName()
+                        + ",provider_category=" + providerCategory
+                        + ",returned_name_matches_proof_pattern=" + proofName
+                        + ",raw_destination_uri_exported=false");
+        EvidenceExporter.ExportArtifact completedExport = exporter.createAndValidate();
         try (InputStream input = new BufferedInputStream(
-                new java.io.FileInputStream(pendingExport.file()));
+                new java.io.FileInputStream(completedExport.file()));
              OutputStream output = new BufferedOutputStream(
                      getContentResolver().openOutputStream(destination, "wt"))) {
             input.transferTo(output);
@@ -366,14 +411,60 @@ public final class MainActivity extends Activity {
         } catch (IOException exception) {
             throw new IllegalStateException("Unable to validate saved evidence ZIP", exception);
         }
-        if (!pendingExport.sha256().equals(destinationHash)) {
+        if (!completedExport.sha256().equals(destinationHash)) {
             throw new IllegalStateException("Saved evidence ZIP checksum mismatch");
         }
+        evidence.recordExportHandoff(
+                "saved-and-checksum-validated",
+                providerCategory,
+                pendingExport.suggestedName(),
+                proofName);
         evidence.append("evidence", "saved-export-validated", "passed",
-                "filename=" + pendingExport.suggestedName() + ",sha256=" + destinationHash);
-        evidenceStatus.setText("Export saved and checksum-validated:\n"
-                + pendingExport.suggestedName() + "\nSHA-256 " + destinationHash);
+                "suggested_filename=" + pendingExport.suggestedName()
+                        + ",provider_category=" + providerCategory
+                        + ",returned_name_matches_proof_pattern=" + proofName
+                        + ",raw_destination_uri_exported=false"
+                        + ",sha256=" + destinationHash);
+        evidenceStatus.setText("Export saved and checksum-validated.\n"
+                + "Saved file: " + returnedName + "\n"
+                + "Destination: " + providerCategory + "\n"
+                + "Raw destination URI is kept on-device and is not exported.\n"
+                + "SHA-256 " + destinationHash + "\n"
+                + "Use Share last saved evidence ZIP if the file is hard to locate.");
+        lastSavedExport = destination;
         pendingExport = null;
+    }
+
+    private void shareLastSavedExport() {
+        if (lastSavedExport == null) {
+            Toast.makeText(this,
+                    "Save and validate an evidence ZIP first.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+        Intent share = new Intent(Intent.ACTION_SEND)
+                .setType("application/zip")
+                .putExtra(Intent.EXTRA_STREAM, lastSavedExport)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(Intent.createChooser(share, "Share validated proof evidence"));
+        evidence.append("evidence", "share-handoff", "opened",
+                "Android share sheet opened for the validated ZIP; raw URI not exported");
+    }
+
+    private String displayName(Uri destination) {
+        try (Cursor cursor = getContentResolver().query(
+                destination,
+                new String[] {OpenableColumns.DISPLAY_NAME},
+                null,
+                null,
+                null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                String name = cursor.getString(0);
+                return name == null || name.isBlank()
+                        ? "(provider did not report a name)" : name;
+            }
+        }
+        return "(provider did not report a name)";
     }
 
     private void refreshStorageStatus() {
@@ -390,23 +481,6 @@ public final class MainActivity extends Activity {
             evidence.recordError("storage", exception.getMessage());
             storageStatus.setText("Storage observation failed closed: " + exception.getMessage());
         }
-    }
-
-    private void prepareSafeRemoval() {
-        if (formatRunner != null) {
-            formatRunner.cancel();
-            formatRunner = null;
-        }
-        withController(player -> {
-            player.pause();
-            player.stop();
-        });
-        evidence.flush();
-        evidence.append("storage", "safe-removal-checkpoint", "ready",
-                "all proof handles are closed; safe to use Android eject/unmount UI");
-        storageStatus.setText(storageStatus.getText()
-                + "\n\nSAFE TO UNMOUNT: proof handles are closed. Use Android storage eject, "
-                + "then physically remove the card.");
     }
 
     private void terminateForRestartProof() {

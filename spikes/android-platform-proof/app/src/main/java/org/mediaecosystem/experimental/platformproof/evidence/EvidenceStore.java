@@ -8,8 +8,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.mediaecosystem.experimental.platformproof.BuildConfig;
+import org.mediaecosystem.experimental.platformproof.fixtures.FormatContract;
 import org.mediaecosystem.experimental.platformproof.model.Hashing;
 import org.mediaecosystem.experimental.platformproof.model.PrivacySanitizer;
+import org.mediaecosystem.experimental.platformproof.model.ScreenOffProof;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -89,6 +91,57 @@ public final class EvidenceStore {
 
     public synchronized void recordFormatMatrix(JSONArray results) {
         mutateState("format_matrix", results);
+    }
+
+    public synchronized void recordScreenOffWorkflow(ScreenOffProof.Status status) {
+        try {
+            mutateState("screen_off_workflow", new JSONObject()
+                    .put("phase", status.phase().name())
+                    .put("test_started", status.testStarted())
+                    .put("playback_continued_while_screen_off",
+                            status.playbackContinuedWhileScreenOff())
+                    .put("minimum_duration_reached", status.minimumDurationReached())
+                    .put("controls_exercised", status.controlsExercised())
+                    .put("test_completed", status.testCompleted())
+                    .put("required_duration_ms", 300_000)
+                    .put("monotonic_duration_ms", status.monotonicDurationMs()));
+        } catch (JSONException exception) {
+            throw new IllegalStateException("Unable to record screen-off workflow", exception);
+        }
+    }
+
+    public synchronized String screenOffWorkflowStatus() {
+        JSONObject workflow = readState().optJSONObject("screen_off_workflow");
+        if (workflow == null) {
+            return "screen-off test: not started";
+        }
+        return "screen-off test: " + workflow.optString("phase", "NOT_STARTED")
+                + "\ncontinued while off: "
+                + workflow.optBoolean("playback_continued_while_screen_off")
+                + "\nminimum reached: " + workflow.optBoolean("minimum_duration_reached")
+                + "\ncontrols exercised in this run: "
+                + workflow.optBoolean("controls_exercised")
+                + "\ntest completed: " + workflow.optBoolean("test_completed")
+                + "\nduration: " + workflow.optLong("monotonic_duration_ms") + " / 300000 ms";
+    }
+
+    public synchronized void recordExportHandoff(
+            String status,
+            String providerCategory,
+            String suggestedFilename,
+            boolean returnedNameMatched
+    ) {
+        try {
+            mutateState("export_handoff", new JSONObject()
+                    .put("status", safe(status))
+                    .put("provider_category", safe(providerCategory))
+                    .put("suggested_filename", safe(suggestedFilename))
+                    .put("returned_name_matched_proof_pattern", returnedNameMatched)
+                    .put("raw_destination_uri_exported", false)
+                    .put("personal_path_exported", false));
+        } catch (JSONException exception) {
+            throw new IllegalStateException("Unable to record export handoff", exception);
+        }
     }
 
     public synchronized void acknowledgePhysicalAction(String action, boolean completed, long monotonicDurationMs) {
@@ -187,11 +240,22 @@ public final class EvidenceStore {
                             .put("device_model", Build.MANUFACTURER + " " + Build.MODEL)
                             .put("architecture", primaryAbi()))
                     .put("fixture_manifest_sha256", fixtureManifestHash())
+                    .put("format_contract", new JSONObject()
+                            .put("id", FormatContract.ID)
+                            .put("active_required_count", FormatContract.REQUIRED_IDS.size())
+                            .put("active_required_format_ids",
+                                    new JSONArray(FormatContract.REQUIRED_IDS))
+                            .put("historical_nonrequired_format_ids",
+                                    new JSONArray(FormatContract.HISTORICAL_NONREQUIRED_IDS)))
                     .put("session_timing", timing)
                     .put("storage", state.optJSONObject("storage") == null
                             ? new JSONObject().put("status", "not run") : state.getJSONObject("storage"))
                     .put("playback", state.optJSONObject("playback") == null
                             ? new JSONObject().put("status", "not run") : state.getJSONObject("playback"))
+                    .put("screen_off_workflow",
+                            state.optJSONObject("screen_off_workflow") == null
+                                    ? screenOffNotStarted()
+                                    : state.getJSONObject("screen_off_workflow"))
                     .put("format_matrix", state.optJSONArray("format_matrix") == null
                             ? new JSONArray() : state.getJSONArray("format_matrix"))
                     .put("physical_actions", state.optJSONArray("physical_actions") == null
@@ -200,6 +264,12 @@ public final class EvidenceStore {
                             ? new JSONArray() : state.getJSONArray("errors"))
                     .put("cleanup", state.optJSONObject("cleanup") == null
                             ? new JSONObject() : state.getJSONObject("cleanup"))
+                    .put("export_handoff", state.optJSONObject("export_handoff") == null
+                            ? new JSONObject()
+                                    .put("status", "awaiting-user-selected-destination")
+                                    .put("raw_destination_uri_exported", false)
+                                    .put("personal_path_exported", false)
+                            : state.getJSONObject("export_handoff"))
                     .put("export", new JSONObject()
                             .put("generated_wall_time_utc", utcNow())
                             .put("generated_elapsed_realtime_ms", endedElapsed)
@@ -289,6 +359,18 @@ public final class EvidenceStore {
         } catch (NoSuchAlgorithmException exception) {
             throw new IllegalStateException("SHA-256 unavailable", exception);
         }
+    }
+
+    private static JSONObject screenOffNotStarted() throws JSONException {
+        return new JSONObject()
+                .put("phase", ScreenOffProof.Phase.NOT_STARTED.name())
+                .put("test_started", false)
+                .put("playback_continued_while_screen_off", false)
+                .put("minimum_duration_reached", false)
+                .put("controls_exercised", false)
+                .put("test_completed", false)
+                .put("required_duration_ms", 300_000)
+                .put("monotonic_duration_ms", 0);
     }
 
     private String readAsset(String path) {

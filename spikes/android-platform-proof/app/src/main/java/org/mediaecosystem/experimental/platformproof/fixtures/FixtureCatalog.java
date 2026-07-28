@@ -11,7 +11,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class FixtureCatalog {
     private final List<Fixture> fixtures;
@@ -43,8 +45,15 @@ public final class FixtureCatalog {
                         metadata.getString("artist"),
                         metadata.getString("album")));
             }
-            if (fixtures.size() != 8) {
-                throw new IllegalStateException("Packaged fixture manifest does not contain exactly eight entries");
+            Map<String, String> labelsById = new HashMap<>();
+            for (Fixture fixture : fixtures) {
+                if (labelsById.put(fixture.id(), fixture.requiredFormat()) != null) {
+                    throw new IllegalStateException("Duplicate packaged fixture ID: " + fixture.id());
+                }
+            }
+            if (!labelsById.equals(FormatContract.REQUIRED_LABELS)) {
+                throw new IllegalStateException(
+                        "Packaged fixture manifest does not match the six-format v1 contract");
             }
             return new FixtureCatalog(fixtures);
         } catch (IOException | JSONException exception) {

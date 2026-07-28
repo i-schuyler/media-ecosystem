@@ -20,6 +20,7 @@
 | Playback/session API | Media3 `ExoPlayer`, `MediaSession`, `MediaSessionService` | [Official background playback guidance](https://developer.android.com/media/media3/session/background-playback) and [foreground-service mediaPlayback requirements](https://developer.android.com/develop/background-work/services/fgs/service-types); official candidate integration |
 | Fixture encoder | FFmpeg 8.1.2 | [Official FFmpeg download/source page](https://ffmpeg.org/download.html); source archive SHA-256 `464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c`, with its detached signature verified against official fingerprint `FCF9 86EA 15E6 E293 A564 4F10 B432 2F04 D676 58D8` |
 | MP3 encoder | LAME 4.0 | [Official LAME project](https://lame.sourceforge.io/); source archive SHA-256 recorded locally as `3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb`; separate V0 and 320 kbps encodings |
+| Local encoder compiler bootstrap | Zig 0.16.0 / clang 21.1.0 | [Official Zig 0.16.0 download metadata](https://ziglang.org/download/0.16.0/); Linux x86-64 archive SHA-256 `70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00`. Used only to rebuild the disposable synthetic encoders on this compiler-less VPS; not an Android or production dependency. |
 
 The VPS initially had no usable Java, Gradle, Android SDK, ADB, FFmpeg, or
 LAME installation. All downloaded tools and caches were placed in a
@@ -35,3 +36,13 @@ verified during repository validation.
 Android lint may report informational upgrade suggestions for API 37 or a
 newer standalone Gradle release. Compile/target 36 and Gradle 9.5.0 are
 intentional compatibility selections above, not hidden suppressions.
+
+For the 2026-07-28 six-format regeneration, FFmpeg was configured as a minimal
+static encoder containing only the file/WAV input and required FLAC, AAC,
+Vorbis, and PCM output components. Its Zig Linux headers required
+`HAVE_SYSCTL=0`. The official LAME 4.0 frontend references UCS-2 tag functions
+hidden by its shipped removal define; the local source build set
+`DEPRECATED_OR_OBSOLETE_CODE_REMOVED=0` and disabled the optional mpg123
+decoder. Exact configure strings and both compatibility overrides are embedded
+in the fixture manifest. These contained source-build adjustments do not alter
+the selected Android candidate or establish production dependencies.

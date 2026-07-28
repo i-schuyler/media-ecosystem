@@ -25,7 +25,11 @@ import org.mediaecosystem.experimental.platformproof.model.FormatDisposition;
 import org.mediaecosystem.experimental.platformproof.model.MonotonicDuration;
 import org.mediaecosystem.experimental.platformproof.model.TimeoutPolicy;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @UnstableApi
@@ -39,7 +43,10 @@ public final class FormatMatrixRunner {
 
     private final Context context;
     private final EvidenceStore evidence;
+    private final List<FixtureCatalog.Fixture> allFixtures;
     private final List<FixtureCatalog.Fixture> fixtures;
+    private final List<String> targetedFixtureIds;
+    private final Map<String, Integer> resultIndexById = new LinkedHashMap<>();
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final TimeoutPolicy timeouts = TimeoutPolicy.boundedDefaults();
     private final Listener listener;
@@ -53,16 +60,38 @@ public final class FormatMatrixRunner {
     private long seekTarget;
     private boolean positionAdvanced;
     private boolean seekCompleted;
+    private boolean openAttempted;
+    private boolean prepared;
+    private boolean playbackStarted;
+    private boolean durationWithinTolerance;
+    private boolean endOfTrackObserved;
     private String decoderName = "not exposed";
     private String reportedFormat = "not exposed";
     private Runnable timeout;
 
-    public FormatMatrixRunner(Context context, Listener listener) {
+    public FormatMatrixRunner(
+            Context context,
+            List<String> fixtureIdsToRun,
+            Listener listener
+    ) {
         this.context = context.getApplicationContext();
         this.listener = listener;
+        targetedFixtureIds = List.copyOf(fixtureIdsToRun);
         evidence = EvidenceStore.get(context);
-        fixtures = FixtureCatalog.load(context).fixtures();
-        for (FixtureCatalog.Fixture fixture : fixtures) {
+        FixtureCatalog catalog = FixtureCatalog.load(context);
+        allFixtures = catalog.fixtures();
+        List<FixtureCatalog.Fixture> selectedFixtures = new ArrayList<>();
+        for (String fixtureId : fixtureIdsToRun) {
+            selectedFixtures.add(catalog.byId(fixtureId));
+        }
+        fixtures = List.copyOf(selectedFixtures);
+        if (fixtures.isEmpty()
+                || fixtures.size() != new HashSet<>(fixtureIdsToRun).size()) {
+            throw new IllegalArgumentException("Targeted format run must contain unique fixture IDs");
+        }
+        for (int manifestIndex = 0; manifestIndex < allFixtures.size(); manifestIndex++) {
+            FixtureCatalog.Fixture fixture = allFixtures.get(manifestIndex);
+            resultIndexById.put(fixture.id(), manifestIndex);
             results.put(notRun(fixture));
         }
         evidence.recordFormatMatrix(results);
@@ -74,13 +103,19 @@ public final class FormatMatrixRunner {
         }
         index = 0;
         evidence.append("formats", "matrix-start", "started",
-                "fixtures=8,bounded_timeouts=true");
+                "active_required_fixtures=" + allFixtures.size()
+                        + ",targeted_fixture_ids="
+                        + targetedFixtureIds
+                        + ",bounded_timeouts=true");
         runCurrent();
     }
 
     public void cancel() {
         if (running.getAndSet(false)) {
-            finishCurrent(FormatDisposition.INCONCLUSIVE, "runner cancelled before completion");
+            finishCurrent(
+                    FormatDisposition.INCONCLUSIVE,
+                    "runner cancelled before completion",
+                    false);
             releasePlayer();
             evidence.recordFormatMatrix(results);
         }
@@ -90,15 +125,23 @@ public final class FormatMatrixRunner {
         if (index >= fixtures.size()) {
             running.set(false);
             evidence.recordFormatMatrix(results);
-            evidence.append("formats", "matrix-complete", "complete", "all eight dispositions recorded");
+            evidence.append("formats", "matrix-complete", "complete",
+                    "all six active dispositions recorded; targeted execution complete");
             listener.onComplete(results);
             return;
         }
         FixtureCatalog.Fixture fixture = fixtures.get(index);
-        listener.onProgress("Preparing " + fixture.requiredFormat() + " (" + (index + 1) + "/8)");
+        listener.onProgress("Preparing " + fixture.requiredFormat()
+                + " (" + (index + 1) + "/" + fixtures.size() + ")");
         fixtureStarted = SystemClock.elapsedRealtime();
         positionAdvanced = false;
         seekCompleted = false;
+        seekTarget = 0;
+        openAttempted = false;
+        prepared = false;
+        playbackStarted = false;
+        durationWithinTolerance = false;
+        endOfTrackObserved = false;
         decoderName = "not exposed";
         reportedFormat = "not exposed";
         phase = Phase.PREPARING;
@@ -123,13 +166,16 @@ public final class FormatMatrixRunner {
                 if (playbackState == Player.STATE_READY && phase == Phase.PREPARING) {
                     onPrepared();
                 } else if (playbackState == Player.STATE_ENDED && phase == Phase.ENDING) {
+                    endOfTrackObserved = true;
+                    boolean passed = requiredPlaybackDimensionsPassed();
                     boolean metadataMatched = metadataMatches(
                             player.getMediaMetadata(), fixtures.get(index));
-                    finishCurrent(positionAdvanced && seekCompleted && metadataMatched
-                                    ? FormatDisposition.PASSED : FormatDisposition.FAILED,
-                            positionAdvanced && seekCompleted && metadataMatched
-                                    ? "open, prepare, start, advancement, seek, duration, metadata, and end observed"
-                                    : "track ended without every required intermediate or metadata observation");
+                    finishCurrent(
+                            passed ? FormatDisposition.PASSED : FormatDisposition.FAILED,
+                            passed
+                                    ? "PB-01 playback dimensions passed; optional metadata match="
+                                            + metadataMatched
+                                    : "end observed but one or more required playback dimensions failed");
                 }
             }
 
@@ -181,6 +227,7 @@ public final class FormatMatrixRunner {
         });
 
         player.setMediaItem(mediaItem(fixture));
+        openAttempted = true;
         player.prepare();
         scheduleTimeout(timeouts.prepareMs(), "open/prepare timeout");
     }
@@ -188,9 +235,12 @@ public final class FormatMatrixRunner {
     private void onPrepared() {
         cancelTimeout();
         FixtureCatalog.Fixture fixture = fixtures.get(index);
+        prepared = true;
         long duration = player.getDuration();
-        if (duration <= 0
-                || Math.abs(duration - fixture.expectedDurationMs()) > fixture.durationToleranceMs()) {
+        durationWithinTolerance = duration > 0
+                && Math.abs(duration - fixture.expectedDurationMs())
+                <= fixture.durationToleranceMs();
+        if (!durationWithinTolerance) {
             finishCurrent(FormatDisposition.FAILED,
                     "duration mismatch: expected=" + fixture.expectedDurationMs() + ",actual=" + duration);
             return;
@@ -203,6 +253,7 @@ public final class FormatMatrixRunner {
     private void onPlaybackStarted() {
         cancelTimeout();
         FixtureCatalog.Fixture fixture = fixtures.get(index);
+        playbackStarted = true;
         advanceBaseline = player.getCurrentPosition();
         listener.onProgress("Playback started for " + fixture.requiredFormat());
         handler.postDelayed(() -> {
@@ -222,6 +273,14 @@ public final class FormatMatrixRunner {
     }
 
     private void finishCurrent(FormatDisposition disposition, String details) {
+        finishCurrent(disposition, details, true);
+    }
+
+    private void finishCurrent(
+            FormatDisposition disposition,
+            String details,
+            boolean continueRunner
+    ) {
         if (index >= fixtures.size()) {
             return;
         }
@@ -242,20 +301,24 @@ public final class FormatMatrixRunner {
                     .put("expected_codec", fixture.codec())
                     .put("candidate_reported_format", reportedFormat)
                     .put("decoder", decoderName)
-                    .put("open_result", disposition == FormatDisposition.NOT_RUN ? "not run" : "attempted")
-                    .put("prepare_result", actualDuration > 0 ? "ready" : "not ready")
-                    .put("playback_start_result", positionAdvanced ? "started and advanced" : "not confirmed")
+                    .put("open_result", openAttempted ? "asset submitted" : "not run")
+                    .put("prepare_result", prepared ? "ready" : "not ready")
+                    .put("playback_start_result", playbackStarted ? "started" : "not confirmed")
                     .put("position_advancement", positionAdvanced)
                     .put("seek_request_ms", seekTarget)
                     .put("seek_completion", seekCompleted)
                     .put("duration_result_ms", actualDuration)
-                    .put("end_of_track_result", disposition == FormatDisposition.PASSED)
+                    .put("duration_within_tolerance", durationWithinTolerance)
+                    .put("end_of_track_result", endOfTrackObserved)
                     .put("basic_metadata_result", metadataMatched)
+                    .put("basic_metadata_required_for_pb01", false)
+                    .put("required_playback_contract_result",
+                            requiredPlaybackDimensionsPassed())
                     .put("warning_or_error", details)
                     .put("total_test_duration_ms", total)
                     .put("bounded_timeouts", timeouts.allBounded())
                     .put("disposition", disposition.wireValue());
-            results.put(index, result);
+            results.put(resultIndexById.get(fixture.id()), result);
             evidence.recordFormatMatrix(results);
             evidence.append("formats", "fixture-complete", disposition.wireValue(),
                     "fixture_id=" + fixture.id() + ",details=" + details);
@@ -264,7 +327,9 @@ public final class FormatMatrixRunner {
         }
         releasePlayer();
         index++;
-        handler.post(this::runCurrent);
+        if (continueRunner) {
+            handler.post(this::runCurrent);
+        }
     }
 
     private void scheduleTimeout(long milliseconds, String failure) {
@@ -313,6 +378,16 @@ public final class FormatMatrixRunner {
                 .setUri(fixture.assetUri())
                 .setMimeType(fixture.mimeType())
                 .build();
+    }
+
+    private boolean requiredPlaybackDimensionsPassed() {
+        return openAttempted
+                && prepared
+                && playbackStarted
+                && positionAdvanced
+                && seekCompleted
+                && durationWithinTolerance
+                && endOfTrackObserved;
     }
 
     private static boolean metadataMatches(

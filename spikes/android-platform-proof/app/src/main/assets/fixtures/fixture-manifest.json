@@ -32,7 +32,7 @@
       "id": "mp3-v0",
       "mime_type": "audio/mpeg",
       "required_format": "MP3 V0",
-      "sha256": "0fccbd4d35f49d1634dad51fe27eae17a9eb149899201f41d18ae6b5967854a3",
+      "sha256": "bdde832765233c5b922ff6610db8b93e69bb890997963b97369f46df6d4de716",
       "size_bytes": 95565
     },
     {
@@ -67,7 +67,7 @@
       "id": "mp3-320",
       "mime_type": "audio/mpeg",
       "required_format": "MP3 320",
-      "sha256": "c276748cfb3813072398b1f2da549501f62f8166e018f660bf7f2cf9a22b3888",
+      "sha256": "db6b2af734f1b9cc18b37437a32f931c6ad0987c96a3c11820b0e2f204346d01",
       "size_bytes": 242351
     },
     {
@@ -165,8 +165,8 @@
       "id": "aac",
       "mime_type": "audio/mp4",
       "required_format": "AAC",
-      "sha256": "decb9cbba586db69a9a5ac6f014f2892be33b94f21e00c20a0c5b332612d5dfa",
-      "size_bytes": 147048
+      "sha256": "23392866c715e833f82e2a1077d9b97f125227bdf601af27f9251bbc805f8e1c",
+      "size_bytes": 147044
     },
     {
       "codec": "Vorbis",
@@ -219,54 +219,8 @@
       "id": "ogg-vorbis",
       "mime_type": "audio/ogg",
       "required_format": "Ogg Vorbis",
-      "sha256": "46b767ac80859fb97a83bb1db2da7fbd62ef4cad340ed0ad4c808cc282fff29d",
+      "sha256": "411c743fa4b2e896454632802059859674358e567dcd8004175b18dde0c66480",
       "size_bytes": 115556
-    },
-    {
-      "codec": "ALAC",
-      "container": "ISO BMFF/M4A",
-      "duration_tolerance_ms": 350,
-      "encoding_setting": "FFmpeg ALAC",
-      "expected_duration_ms": 6000,
-      "expected_metadata": {
-        "album": "Disposable Phase 1 Format Proof",
-        "artist": "Media Ecosystem Synthetic Lab",
-        "title": "Synthetic ALAC"
-      },
-      "filename": "alac.m4a",
-      "generator_arguments": [
-        "-hide_banner",
-        "-loglevel",
-        "error",
-        "-nostdin",
-        "-y",
-        "-fflags",
-        "+bitexact",
-        "-i",
-        "<source-pcm>",
-        "-map_metadata",
-        "-1",
-        "-metadata",
-        "title=Synthetic ALAC",
-        "-metadata",
-        "artist=Media Ecosystem Synthetic Lab",
-        "-metadata",
-        "album=Disposable Phase 1 Format Proof",
-        "-metadata",
-        "date=2026",
-        "-flags:a",
-        "+bitexact",
-        "-c:a",
-        "alac",
-        "-f",
-        "ipod",
-        "<output>/alac.m4a"
-      ],
-      "id": "alac",
-      "mime_type": "audio/mp4",
-      "required_format": "ALAC",
-      "sha256": "eda9c154e4dfbc593b6ac010efaabf37e221d95c000813f35ae5431a7fdce771",
-      "size_bytes": 235268
     },
     {
       "codec": "PCM signed 16-bit little-endian",
@@ -313,55 +267,34 @@
       "required_format": "WAV",
       "sha256": "9624b3887c5c84f7ab9b448afbabfe5d45f1c174ca8cf6e714efb1b439c13c24",
       "size_bytes": 1152192
-    },
-    {
-      "codec": "PCM signed 16-bit big-endian",
-      "container": "AIFF",
-      "duration_tolerance_ms": 350,
-      "encoding_setting": "FFmpeg pcm_s16be",
-      "expected_duration_ms": 6000,
-      "expected_metadata": {
-        "album": "Disposable Phase 1 Format Proof",
-        "artist": "Media Ecosystem Synthetic Lab",
-        "title": "Synthetic AIFF"
-      },
-      "filename": "aiff.aiff",
-      "generator_arguments": [
-        "-hide_banner",
-        "-loglevel",
-        "error",
-        "-nostdin",
-        "-y",
-        "-fflags",
-        "+bitexact",
-        "-i",
-        "<source-pcm>",
-        "-map_metadata",
-        "-1",
-        "-metadata",
-        "title=Synthetic AIFF",
-        "-metadata",
-        "artist=Media Ecosystem Synthetic Lab",
-        "-metadata",
-        "album=Disposable Phase 1 Format Proof",
-        "-metadata",
-        "date=2026",
-        "-flags:a",
-        "+bitexact",
-        "-c:a",
-        "pcm_s16be",
-        "-f",
-        "aiff",
-        "<output>/aiff.aiff"
-      ],
-      "id": "aiff",
-      "mime_type": "audio/aiff",
-      "required_format": "AIFF",
-      "sha256": "bc9ee5b059d5e094301373f243cc6ba2318c990cd6c179654f5a92a381fe0b76",
-      "size_bytes": 1152076
     }
   ],
+  "format_contract": {
+    "active_required_count": 6,
+    "active_required_format_ids": [
+      "mp3-v0",
+      "mp3-320",
+      "flac",
+      "aac",
+      "ogg-vorbis",
+      "wav"
+    ],
+    "amended_on": "2026-07-28",
+    "historical_nonrequired_format_ids": [
+      "alac",
+      "aiff"
+    ],
+    "id": "v1-required-formats-2026-07-28"
+  },
   "generator": {
+    "encoder_build": {
+      "compiler": "Zig 0.16.0 clang 21.1.0",
+      "compiler_archive_sha256": "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00",
+      "ffmpeg_compatibility_override": "HAVE_SYSCTL=0 for the Zig-provided Linux headers",
+      "ffmpeg_configuration": "--disable-everything --disable-autodetect --disable-x86asm --disable-doc --disable-debug --disable-network --disable-ffplay --disable-ffprobe --disable-shared --enable-static --enable-ffmpeg --enable-protocol=file --enable-demuxer=wav --enable-decoder=pcm_s16le --enable-encoder=flac,aac,vorbis,pcm_s16le --enable-muxer=flac,ipod,ogg,wav --enable-filter=aresample,aformat,anull --enable-parser=aac,vorbis,flac",
+      "lame_compatibility_override": "DEPRECATED_OR_OBSOLETE_CODE_REMOVED=0 to build the official 4.0 frontend's referenced UCS-2 tag functions",
+      "lame_configuration": "--disable-shared --enable-static --disable-decoder"
+    },
     "ffmpeg": "8.1.2",
     "ffmpeg_source_sha256": "464beb5e7bf0c311e68b45ae2f04e9cc2af88851abb4082231742a74d97b524c",
     "lame": "4.0",
@@ -370,7 +303,7 @@
     "script": "scripts/generate_fixtures.py"
   },
   "provenance": "deterministic synthetic integer triangle-tone sequence; no human recording or personal media",
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "source_pcm": {
     "amplitude_peak_pcm16": 1200,
     "channels": 2,

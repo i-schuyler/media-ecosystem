@@ -15,10 +15,9 @@ REQUIRED = {
     "flac": "FLAC",
     "aac": "AAC",
     "ogg-vorbis": "Ogg Vorbis",
-    "alac": "ALAC",
     "wav": "WAV",
-    "aiff": "AIFF",
 }
+HISTORICAL_NONREQUIRED = {"alac", "aiff"}
 MAX_FILE_BYTES = 2_000_000
 MAX_TOTAL_BYTES = 8_000_000
 
@@ -33,9 +32,15 @@ def main() -> None:
     assert "synthetic" in manifest["provenance"].lower()
     assert "no human recording" in manifest["provenance"].lower()
     entries = manifest["fixtures"]
-    assert len(entries) == 8
+    contract = manifest["format_contract"]
+    assert contract["id"] == "v1-required-formats-2026-07-28"
+    assert contract["active_required_count"] == 6
+    assert set(contract["active_required_format_ids"]) == set(REQUIRED)
+    assert set(contract["historical_nonrequired_format_ids"]) == HISTORICAL_NONREQUIRED
+    assert len(entries) == 6
     assert {entry["id"]: entry["required_format"] for entry in entries} == REQUIRED
-    assert len({entry["filename"] for entry in entries}) == 8
+    assert len({entry["filename"] for entry in entries}) == 6
+    assert not ({entry["id"] for entry in entries} & HISTORICAL_NONREQUIRED)
     expected_files = {entry["filename"] for entry in entries} | {
         "fixture-manifest.json",
         "SHA256SUMS",
@@ -68,7 +73,7 @@ def main() -> None:
 
     sums = (FIXTURE_DIR / "SHA256SUMS").read_text(encoding="utf-8").splitlines()
     assert sums == expected_sums
-    print(f"Verified 8 synthetic fixtures ({total} bytes), manifest, provenance, and hashes.")
+    print(f"Verified 6 synthetic fixtures ({total} bytes), manifest, provenance, and hashes.")
 
 
 if __name__ == "__main__":

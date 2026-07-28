@@ -8,6 +8,8 @@ on:
       - "spikes/android-platform-proof/**"
       - "docs/spikes/phase-1/android-platform-proof/**"
       - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+      - "docs/product/Media_Ecosystem_v1.0.0_DoD.md"
+      - "docs/product/V1_ACCEPTANCE_MATRIX.md"
   push:
     branches:
       - main
@@ -17,6 +19,8 @@ on:
       - "spikes/android-platform-proof/**"
       - "docs/spikes/phase-1/android-platform-proof/**"
       - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+      - "docs/product/Media_Ecosystem_v1.0.0_DoD.md"
+      - "docs/product/V1_ACCEPTANCE_MATRIX.md"
 
 permissions:
   contents: read
@@ -73,7 +77,15 @@ jobs:
           echo "${sdk_root}/cmdline-tools/latest/bin" >> "${GITHUB_PATH}"
 
       - name: Verify synthetic fixture provenance and hashes
-        run: python3 scripts/verify_fixtures.py
+        run: |
+          python3 scripts/verify_fixtures.py
+          python3 -m unittest discover -s scripts -p 'test_*.py' -v
+          python3 scripts/verify_evidence.py \
+            --verify-sanitized-report \
+            ../../docs/spikes/phase-1/android-platform-proof/evidence/android-2026-07-24-sanitized.json
+          test -z "$(git ls-files -- '../../.codex-local')"
+          git check-ignore --no-index \
+            ../../.codex-local/incoming/android-platform-proof/media-ecosystem-android-proof-20260724T210914Z.zip
 
       - name: Run unit tests, lint, and debug assembly
         env:

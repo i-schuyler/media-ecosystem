@@ -22,7 +22,8 @@ The single scrolling diagnostic screen keeps five areas visibly separate:
 2. **Playback lifecycle** controls a foreground `MediaSessionService` backed
    by the disposable Media3 candidate, records monotonic screen-off time, and
    exposes explicit acknowledgements for system-control observations.
-3. **Format matrix** runs all eight fixtures independently with bounded
+3. **Format matrix** uses stable fixture IDs and packages the six active v1
+   formats. The current handoff exposes a WAV-only targeted retest with bounded
    prepare, start, seek, and end timeouts.
 4. **Evidence** writes one validated, sanitized ZIP through Android's document
    creation flow.
@@ -36,7 +37,8 @@ system controls, and decoder behavior require the physical primary tablet.
 
 Exact versions, checksums, official sources, and selection rationale are in
 [TOOLCHAIN.md](TOOLCHAIN.md). The committed wrapper is the supported Gradle
-entry point. From a clean checkout with Java and SDK paths supplied explicitly:
+entry point. In a dedicated Heartloom VPS session, from a clean checkout with
+Java and SDK paths supplied explicitly:
 
 ```sh
 export JAVA_HOME=/absolute/path/to/temurin-17
@@ -72,8 +74,13 @@ The exact generator, source versions, arguments, containers, codecs, expected
 duration and metadata, byte sizes, source PCM hash, and fixture SHA-256 values
 are in
 [`fixture-manifest.json`](app/src/main/assets/fixtures/fixture-manifest.json).
-AAC-LC and ALAC use explicit ISO BMFF/M4A containers. MP3 V0 uses LAME
+AAC-LC uses an explicit ISO BMFF/M4A container. MP3 V0 uses LAME
 `-V 0 --vbr-new`; MP3 320 uses distinct `-b 320 --cbr` settings.
+
+The active v1 corpus is exactly MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and
+WAV. The original 2026-07-24 physical run also contained ALAC and AIFF. Those
+two observations remain preserved in the sanitized historical report but the
+files are not active v1 fixtures or packaged in the retest APK.
 
 Generation and reproducibility verification:
 
@@ -90,10 +97,11 @@ python3 scripts/generate_fixtures.py \
   --verify
 ```
 
-`scripts/verify_fixtures.py` rejects missing or extra corpus files, missing
-formats, provenance gaps, hash or size mismatches, fixtures above 2 MB, and a
-corpus above 8 MB. It runs before every Android build and from the foundation
-guardrail. The narrow repository exception is documented in the
+`scripts/verify_fixtures.py` rejects missing or extra corpus files, a count
+other than exactly six active formats, active ALAC/AIFF entries, provenance
+gaps, hash or size mismatches, fixtures above 2 MB, and a corpus above 8 MB. It
+runs before every Android build and from the foundation guardrail. The narrow
+repository exception is documented in the
 [privacy and fixture policy](../../docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md).
 
 ## SAF state and safety model
@@ -137,17 +145,21 @@ becoming-noisy handling, wake mode, repeat-all synthetic playback, metadata,
 play/pause/seek/previous/next/stop, and structured state observations.
 
 The screen-off threshold is five minutes, measured with
-`SystemClock.elapsedRealtime()`. The threshold is long enough to expose a
-simple lifecycle stop while keeping the manual session bounded. A shorter
-observation is recorded as not meeting the duration; the application never
-fills it in as passed.
+`SystemClock.elapsedRealtime()`. The guided workflow now distinguishes test
+started, playback ready, screen-off playback active, minimum reached, controls
+exercised, and test completed. Completion is refused until continuous playback
+has reached 300,000 ms. The earlier 137 ms off/on event therefore remains
+incomplete rather than appearing equivalent to the required interval.
 
 The format runner uses a separate instance of the same candidate. Each fixture
 records manifest identity/hash, expected and actual duration, MIME/container,
 candidate track format, exposed decoder name, open/prepare/start/position
 advancement/seek/end results, extracted basic metadata, warnings/errors,
 monotonic total time, and one of `passed`, `failed`, `inconclusive`, or
-`not run`. A failure advances to the next fixture. Timeouts are finite so one
+`not run`. PB-01 disposition requires open/prepare/start, position advancement,
+seek, duration tolerance, and end-of-track. Metadata remains a separate
+optional dimension because WAV does not reliably carry the synthetic tag set.
+A failure advances to the next targeted fixture. Timeouts are finite so one
 decoder cannot stall the matrix.
 
 Trying this candidate does not select it. The later Phase 1 architecture ADR
@@ -155,8 +167,10 @@ must compare it with all other completed or unresolved evidence.
 
 ## Evidence ZIP and privacy
 
-The versioned primary schema is
-[`evidence-schema-v1.json`](app/src/main/assets/evidence/evidence-schema-v1.json).
+The corrected historical schema is
+[`evidence-schema-v1.json`](app/src/main/assets/evidence/evidence-schema-v1.json);
+the retest app emits schema
+[`1.1`](app/src/main/assets/evidence/evidence-schema-v1.1.json).
 One **Export evidence ZIP** action recommends a filename beginning
 `media-ecosystem-android-proof-` and writes:
 
@@ -169,8 +183,12 @@ One **Export evidence ZIP** action recommends a filename beginning
 - `CHECKSUMS.sha256`.
 
 The app validates the in-memory entry contract and every entry hash, writes the
-ZIP through the chosen Android provider, then reopens and hashes the saved ZIP
-before reporting success. Audio binaries are not exported.
+ZIP through the user-selected Android provider, then reopens and hashes the
+saved ZIP before reporting success. It displays the returned filename and a
+sanitized provider category, explicitly says that no raw URI is exported, and
+can open Android's share sheet for the last validated saved ZIP. This avoids
+assuming that a provider exposes the file through Termux's Downloads
+projection. Audio binaries are not exported.
 
 Exported evidence includes app/source/build/dependency versions; sanitized
 Android environment; fixture-manifest hash; app-generated wall times and
@@ -182,26 +200,37 @@ It excludes raw document URIs, removable-volume identifiers, account or Wi-Fi
 data, installed-app lists, personal filenames and paths, library contents,
 serial numbers, advertising IDs, credentials, and authentication material.
 
-## Physical protocol
+## Verified physical evidence and targeted retest
 
-The app itself labels and records each unavoidable action. On the Samsung
-Galaxy Tab S10 FE 5G:
+The unchanged raw 2026-07-24 archive is ignored. Its whole-ZIP SHA-256 is
+`882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`.
+The reproducible sanitized report is
+[`android-2026-07-24-sanitized.json`](../../docs/spikes/phase-1/android-platform-proof/evidence/android-2026-07-24-sanitized.json).
 
-1. install/open and grant notification permission if requested;
-2. select the removable SD root and run the immediate and guided process-stop
-   check;
-3. reboot normally and reopen;
-4. prepare safe removal in the app, use Android's eject/unmount control,
-   remove/reinsert the card, and recheck access;
-5. run the guided revocation and explicit marker-validated relink check;
-6. run the five-minute screen-off playback sequence and exercise notification,
-   lock-screen, hardware/Bluetooth (when available), interruption, and
-   becoming-noisy controls;
-7. run all eight format checks;
-8. export the ZIP; and
-9. upload that ZIP unchanged for host verification and sanitization.
+That run verified persisted SAF read/write permission and marker access after
+reboot; acknowledged notification, lock-screen, hardware-button, audio-focus,
+and becoming-noisy observations; and passed MP3 V0, MP3 320, FLAC, AAC, and
+Ogg Vorbis. It did not complete the five-minute screen-off interval. WAV needs
+a corrected end-of-track retest. Removal/reinsertion, revocation, and explicit
+relink were not performed.
 
-The host-side reports remain pending until the exported physical evidence is
-received. Uninstalling this application removes application-private state; it
-is not described as deleting user media, and its isolated SD proof directory
-has a separate explicit cleanup control.
+The smallest follow-up on the same Samsung tablet is:
+
+1. install/update and open the new debug APK;
+2. start the five-minute screen-off retest, wait for
+   `READY_TO_TURN_SCREEN_OFF`, turn the screen off for at least five minutes,
+   return, verify `MINIMUM_REACHED`, and tap Complete;
+3. run the targeted WAV check;
+4. export the ZIP to any user-selected provider and either locate the displayed
+   filename/provider category or use **Share last saved evidence ZIP**.
+
+Do not repeat the storage sequence, the five already-valid required formats,
+or the already-acknowledged media controls. The tablet's shared SIM/microSD
+tray is effectively permanent in ordinary use, so this slice does not ask for
+physical removal. Future storage evidence may use a safe Android unmount/eject,
+persisted-permission revocation, provider-unavailability simulation, or a
+secondary device. Missing or revoked access still never means deletion.
+
+Uninstalling this application removes application-private state; it is not
+described as deleting user media, and its isolated SD proof directory has a
+separate explicit cleanup control.
