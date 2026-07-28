@@ -33,11 +33,12 @@ application access through the Storage Access Framework.
 
 The disposable
 [Android platform proof](../../spikes/android-platform-proof/README.md) is
-prepared to collect the missing app-level SAF, background playback/system
-controls, and required-format evidence on this exact tablet. Its
-[evidence index](../spikes/phase-1/android-platform-proof/README.md) remains
-**tooling ready; device evidence pending**. The APK, host tests, and CI do not
-broaden support or satisfy any physical row below.
+collecting app-level SAF, background playback/system controls, and
+required-format evidence on this exact tablet. Its
+[evidence index](../spikes/phase-1/android-platform-proof/README.md) records a
+verified 2026-07-24 partial run. Persisted access and several system controls
+were observed, but the five-minute screen-off interval and targeted WAV retest
+remain. Build success alone does not broaden support or satisfy a physical row.
 
 The 2026-07-23 Windows shared-core run records Microsoft Surface Book 3,
 Windows 11 Pro 25H2 version `10.0.26200` / build `26200.8894`, 64-bit NTFS,
@@ -61,7 +62,7 @@ other personal identifiers in spike reports.
 | Playback lifecycle | Background playback, screen-off playback, app restart, and device reboot |
 | System integration | Lock-screen controls and media-button controls |
 | Failure conditions | Network loss and storage pressure |
-| Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, ALAC, WAV, and AIFF |
+| Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV |
 
 ### Windows required tests
 
@@ -71,7 +72,7 @@ other personal identifiers in spike reports.
 | System integration | Windows media controls |
 | Playback lifecycle | Sleep and wake, plus app restart |
 | Failure conditions | Network loss and removable or unavailable storage behavior where reproducible |
-| Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, ALAC, WAV, and AIFF |
+| Formats | MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV |
 
 ## Evidence rules
 
@@ -99,3 +100,15 @@ Real personal media is never committed, copied into fixtures, or required for
 CI. Any manual device-only observation involving private data must be replaced
 with synthetic or redistributable evidence before it can support a release
 claim.
+
+### Primary Android removable-media constraint
+
+The Galaxy Tab S10 FE 5G uses a shared SIM/microSD tray that is effectively
+permanent in ordinary use: physical removal requires removing the case, using a
+SIM-eject tool, and extracting the tray. The 2026-07-24 proof therefore records
+removal/reinsertion as unperformed, and this slice does not ask for another
+physical removal. Future evidence may use Android system unmount/eject where
+safely available, persisted-permission revocation, provider-unavailability
+simulation, or a secondary device with conveniently removable storage.
+Regardless of method, unavailable or revoked storage must never become
+deletion intent.

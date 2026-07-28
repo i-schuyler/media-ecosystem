@@ -49,11 +49,14 @@ evidence does not satisfy the Phase 1 exit gate or select the production stack.
 
 The disposable
 [Android platform proof](../../spikes/android-platform-proof/README.md) now
-provides the synthetic fixtures, guided app, evidence schema/export, safe
-cleanup, host tests, and CI needed for issues #2, #3, and the Android half of
-#5. Its [reports](../spikes/phase-1/android-platform-proof/README.md) remain at
-**tooling ready; device evidence pending**. APK build success alone satisfies
-none of those issue exit criteria.
+records verified partial Samsung-tablet evidence for issues #2, #3, and the
+Android half of #5. Persisted SAF read/write access and marker access survived
+reboot; notification, lock-screen, hardware-button, audio-focus, and
+becoming-noisy observations were acknowledged; and five active required
+formats passed. The five-minute screen-off interval, corrected WAV
+end-of-track disposition, storage removal/relink alternatives, and Windows
+six-format matrix remain. The 2026-07-28 product-contract amendment removed
+ALAC and AIFF from v1 without rewriting the historical eight-format run.
 
 Prove the highest-risk capabilities before choosing the production stack:
 

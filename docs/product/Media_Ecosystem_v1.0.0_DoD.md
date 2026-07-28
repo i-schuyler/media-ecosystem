@@ -17,7 +17,16 @@ Media Ecosystem is a custom cross-device player and library system that:
 
 ## Required formats
 
-MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, ALAC, WAV, and AIFF must play on both platforms.
+MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV must play on both platforms.
+
+### 2026-07-28 required-format amendment
+
+The frozen baseline originally included ALAC and AIFF. On 2026-07-28 the user
+intentionally removed both from v1 as a product-priority decision. The amended
+v1 required set is exactly MP3 V0, MP3 320, FLAC, AAC, Ogg Vorbis, and WAV.
+ALAC and AIFF may be reconsidered after v1. Historical evidence that exercised
+the original eight-format baseline remains historical evidence and must not be
+rewritten or erased.
 
 ## Identity and paths
 
