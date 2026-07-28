@@ -23,8 +23,9 @@ The single scrolling diagnostic screen keeps five areas visibly separate:
    by the disposable Media3 candidate, records monotonic screen-off time, and
    exposes explicit acknowledgements for system-control observations.
 3. **Format matrix** uses stable fixture IDs and packages the six active v1
-   formats. The current handoff exposes a WAV-only targeted retest with bounded
-   prepare, start, seek, and end timeouts.
+   formats. The hardened runner retains the WAV-only targeted mode used for the
+   completed corrected retest, with bounded prepare, start, seek, and end
+   timeouts.
 4. **Evidence** writes one validated, sanitized ZIP through Android's document
    creation flow.
 5. **Cleanup** separately removes only a marker-validated SD proof directory,
@@ -145,11 +146,12 @@ becoming-noisy handling, wake mode, repeat-all synthetic playback, metadata,
 play/pause/seek/previous/next/stop, and structured state observations.
 
 The screen-off threshold is five minutes, measured with
-`SystemClock.elapsedRealtime()`. The guided workflow now distinguishes test
+`SystemClock.elapsedRealtime()`. The guided workflow distinguishes test
 started, playback ready, screen-off playback active, minimum reached, controls
 exercised, and test completed. Completion is refused until continuous playback
-has reached 300,000 ms. The earlier 137 ms off/on event therefore remains
-incomplete rather than appearing equivalent to the required interval.
+has reached 300,000 ms. The initial 137 ms off/on event remains incomplete; the
+targeted physical retest later completed 888,433 ms and explicitly reached the
+`COMPLETED` phase.
 
 The format runner uses a separate instance of the same candidate. Each fixture
 records manifest identity/hash, expected and actual duration, MIME/container,
@@ -200,36 +202,49 @@ It excludes raw document URIs, removable-volume identifiers, account or Wi-Fi
 data, installed-app lists, personal filenames and paths, library contents,
 serial numbers, advertising IDs, credentials, and authentication material.
 
-## Verified physical evidence and targeted retest
+## Verified physical evidence
 
-The unchanged raw 2026-07-24 archive is ignored. Its whole-ZIP SHA-256 is
+Raw physical archives remain unchanged, ignored, and outside Git. The durable
+[evidence index](../../docs/spikes/phase-1/android-platform-proof/evidence/README.md)
+links the two reproducible sanitized reports.
+
+### 2026-07-24 initial session
+
+The whole-ZIP SHA-256 is
 `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`.
-The reproducible sanitized report is
-[`android-2026-07-24-sanitized.json`](../../docs/spikes/phase-1/android-platform-proof/evidence/android-2026-07-24-sanitized.json).
-
-That run verified persisted SAF read/write permission and marker access after
+The session verified persisted SAF read/write permission and marker access after
 reboot; acknowledged notification, lock-screen, hardware-button, audio-focus,
 and becoming-noisy observations; and passed MP3 V0, MP3 320, FLAC, AAC, and
-Ogg Vorbis. It did not complete the five-minute screen-off interval. WAV needs
-a corrected end-of-track retest. Removal/reinsertion, revocation, and explicit
-relink were not performed.
+Ogg Vorbis. It did not complete the five-minute screen-off interval. The
+original WAV aggregate disposition required a corrected end-of-track retest.
+Removal/reinsertion, revocation, and explicit relink were not performed.
 
-The smallest follow-up on the same Samsung tablet is:
+### 2026-07-28 targeted session
 
-1. install/update and open the new debug APK;
-2. start the five-minute screen-off retest, wait for
-   `READY_TO_TURN_SCREEN_OFF`, turn the screen off for at least five minutes,
-   return, verify `MINIMUM_REACHED`, and tap Complete;
-3. run the targeted WAV check;
-4. export the ZIP to any user-selected provider and either locate the displayed
-   filename/provider category or use **Share last saved evidence ZIP**.
+The whole-ZIP SHA-256 is
+`593b28964854248ccb0b5177d6b27c2c26c43429b08ca3fdd8cecfc437c9d6d2`.
+The exact seven-member allowlist, internal checksums, fixture manifest, build
+metadata, source commit, schema 1.1, and privacy boundary passed.
 
-Do not repeat the storage sequence, the five already-valid required formats,
-or the already-acknowledged media controls. The tablet's shared SIM/microSD
-tray is effectively permanent in ordinary use, so this slice does not ask for
-physical removal. Future storage evidence may use a safe Android unmount/eject,
-persisted-permission revocation, provider-unavailability simulation, or a
-secondary device. Missing or revoked access still never means deletion.
+The session completed continuous screen-off playback for 888,433 ms against the
+required 300,000 ms minimum. WAV passed open, prepare, playback start, position
+advancement, seek, 6,000 ms duration tolerance, and end-of-track. Optional WAV
+metadata remained false and is explicitly not required by PB-01. Targeted
+`not run` rows for the other five formats do not erase their verified initial
+passes.
+
+### Combined disposition
+
+- Issue #3's Android background/system-control criteria are satisfied for this
+  disposable candidate, and the issue is closed.
+- All six amended v1 formats pass on Android; issue #5 remains open for the
+  exact six-format Windows matrix.
+- Issue #2 remains open because an actual unavailable transition,
+  removal/reinsertion, revocation, and explicit relink were not performed.
+- The tablet's shared SIM/microSD tray is treated as effectively permanent in
+  ordinary use; no further physical tray removal is requested.
+- Media3 remains a disposable Phase 1 candidate and is not a production
+  selection.
 
 Uninstalling this application removes application-private state; it is not
 described as deleting user media, and its isolated SD proof directory has a
