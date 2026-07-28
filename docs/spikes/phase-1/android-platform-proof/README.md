@@ -5,9 +5,9 @@ This directory indexes the disposable application prepared for GitHub issues
 
 | Issue | Report | Current evidence level | Issue disposition |
 |---|---|---|---|
-| #2 | [Persisted removable-storage access](issue-2-saf-storage.md) | Tooling and guided evidence collection ready; physical lifecycle evidence pending | Open; no exit criteria satisfied by build success |
-| #3 | [Background playback and system controls](issue-3-background-playback.md) | Tooling and guided evidence collection ready; physical lifecycle/control evidence pending | Open; no exit criteria satisfied by build success |
-| #5 | [Android required-format matrix](issue-5-android-formats.md) | Eight-format harness ready; Android physical decoder evidence pending, and Windows remains independently required | Open |
+| #2 | [Persisted removable-storage access](issue-2-saf-storage.md) | Persisted read/write permission and marker access verified through reboot; removal/reinsertion and relink unperformed | Open |
+| #3 | [Background playback and system controls](issue-3-background-playback.md) | System-control/interruption acknowledgements verified; screen-off observed for 137 ms, below the required 300,000 ms | Open; targeted screen-off retest required |
+| #5 | [Android required-format matrix](issue-5-android-formats.md) | Five of six active v1 formats passed on Android; corrected WAV retest and all six Windows checks remain | Open |
 
 The runnable source and complete proof boundary are in
 [`spikes/android-platform-proof/`](../../../../spikes/android-platform-proof/README.md).
@@ -15,17 +15,21 @@ The candidate is AndroidX Media3 1.10.1 for comparison only. Nothing here
 selects a production stack, application language, framework, playback engine,
 storage abstraction, or UI.
 
-At the tooling checkpoint:
+The unchanged raw evidence ZIP is ignored. The reproducible
+[sanitized report](evidence/android-2026-07-24-sanitized.json) records:
 
-- deterministic synthetic fixtures are committed and verified;
-- host-side unit tests, lint, APK assembly, packaging checks, and CI are
-  required to pass;
-- the evidence schema, ZIP exporter, safe cleanup, and device protocol are
-  implemented; and
-- every device result remains `not run` or pending until the Samsung Galaxy
-  Tab S10 FE 5G exports a validated evidence ZIP.
+- whole-ZIP SHA-256
+  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`;
+- exact member allowlist, internal checksum, fixture-manifest, build/source,
+  corrected schema-compatibility, and privacy verification;
+- the measured storage, playback, and per-format observations; and
+- unperformed steps and remaining gaps without inference.
 
-The exported raw ZIP must remain ignored and unchanged. After it is received,
-the host workflow verifies its checksums, produces sanitized reviewable
-results, updates these reports, and evaluates existing issue exit criteria
-without weakening them.
+The active v1 format contract was amended on 2026-07-28 to exactly MP3 V0,
+MP3 320, FLAC, AAC, Ogg Vorbis, and WAV. ALAC and AIFF remain in the historical
+eight-format report as `nonrequired_historical_observation`; their observations
+were not rewritten or erased.
+
+The retest APK narrows the physical follow-up to five-minute screen-off
+playback, WAV, and evidence export. It does not require SD removal, another
+complete format run, or repeated media-control observations.

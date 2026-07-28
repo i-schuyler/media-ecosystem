@@ -7,7 +7,8 @@
 - **Related DoD sections:** Playback; Persistent queue.
 - **Related acceptance IDs:** PB-02.
 - **Platform and exact environment:** Samsung Galaxy Tab S10 FE 5G, Android
-  16. Runtime build/model/architecture evidence is pending.
+  16 build `BP4A.251205.006.X528USQU9CZE9`, model `samsung SM-X528U`,
+  `arm64-v8a`.
 - **Candidate approach:** AndroidX Media3 1.10.1 ExoPlayer plus
   `MediaSessionService`, used as one disposable candidate only.
 - **Preconditions:** Installed proof APK, notification permission where
@@ -17,9 +18,10 @@
 
 The app starts synthetic playback, records service/player/activity states,
 loops the short fixture playlist, detects screen off/on, and measures elapsed
-time with the monotonic clock. The operator backgrounds the activity, turns
-the screen off for at least five minutes, returns, and exercises the available
-system controls. App buttons acknowledge only actions actually performed.
+time with the monotonic clock. The hardened retest workflow records distinct
+test-started, playback-ready, screen-off-playing, minimum-reached,
+controls-exercised, and completed states. Completion is refused until the
+300,000 ms minimum is reached.
 
 ## Criteria
 
@@ -38,7 +40,12 @@ system controls. App buttons acknowledge only actions actually performed.
 
 ## Results and measurements
 
-- **Tooling:** Ready. Foreground media playback permissions and service type,
+- **Archive verification:** The ignored raw ZIP SHA-256 is
+  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`;
+  its allowlist, internal checksums, source/build, corrected v1 compatibility
+  schema, and privacy boundary passed. See the
+  [sanitized report](evidence/android-2026-07-24-sanitized.json).
+- **Tooling:** Foreground media playback permissions and service type,
   MediaSession integration, automatic audio focus, becoming-noisy handling,
   wake mode, synthetic metadata, notification/session controls, and structured
   observations are implemented.
@@ -47,9 +54,19 @@ system controls. App buttons acknowledge only actions actually performed.
 - **Host validation:** State translation, monotonic-duration rejection, bounded
   timeout logic, evidence contracts, lint, and APK packaging are testable on
   the host.
-- **Physical results:** **Pending / not run.** No background survival or
-  system-control behavior is claimed from host tests or APK assembly.
-- **Exit criteria:** **Not satisfied at the tooling checkpoint.**
+- **Physical results:** Notification play/pause, lock-screen play/pause and
+  metadata, hardware media-button behavior, audio-focus interruption, and
+  becoming-noisy behavior were acknowledged. Playback was active at screen-off
+  and on return, but the monotonic interval was only **137 ms**, not 300,000
+  ms.
+- **Root cause:** The original workflow recorded the brief Android off/on
+  broadcast correctly but had no explicit playback-ready, minimum-duration, or
+  completion gate, so a short event could advance the guided workflow.
+- **Fix:** The retest state machine makes readiness and the five-minute
+  threshold visible, records continuous-playback failure, and refuses
+  completion until the minimum is reached.
+- **Exit criteria:** **Not satisfied.** The media-control observations are
+  retained; only the five-minute screen-off interval requires repetition.
 
 ## Limitations, security, and privacy
 
@@ -64,7 +81,9 @@ system controls. App buttons acknowledge only actions actually performed.
 
 - **Production suitability:** Not established. Media3 1.10.1 is a disposable
   candidate, not the selected production engine.
-- **Disposition:** **inconclusive** pending the physical lifecycle session.
-- **Required follow-up:** Verify and sanitize the exported ZIP, evaluate issue
-  #3 against unchanged PB-02 criteria, and retain results for the later
-  candidate-comparison ADR.
+- **Disposition:** **retain for comparison** for the acknowledged controls;
+  overall PB-02 remains inconclusive.
+- **Required follow-up:** Run only the hardened five-minute screen-off retest
+  and export the resulting evidence. Do not repeat already acknowledged
+  control/interruption observations unless a future tooling change invalidates
+  them.

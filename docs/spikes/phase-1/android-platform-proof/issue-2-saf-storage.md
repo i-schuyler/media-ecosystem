@@ -8,8 +8,8 @@
   migration.
 - **Related acceptance IDs:** FS-01, FS-02.
 - **Platform and exact environment:** Samsung Galaxy Tab S10 FE 5G, Android
-  16. The app records exact release/build/model/architecture at runtime;
-  physical proof environment is pending.
+  16 build `BP4A.251205.006.X528USQU9CZE9`, model `samsung SM-X528U`,
+  `arm64-v8a`.
 - **Candidate approach:** Official Android Storage Access Framework
   directory-tree picker, persistable URI permission, and `DocumentsContract`
   inside a disposable Java 17 proof app.
@@ -21,10 +21,9 @@
 Build and APK validation commands are in the
 [proof README](../../../../spikes/android-platform-proof/README.md). The app
 guides root selection, immediate access, intentional process termination,
-reboot/relaunch, safe eject/removal, unavailable observation, reinsertion,
-guided revocation, explicit relink, export, and optional cleanup. It flushes
-its evidence before intentional termination and asks the operator only to
-reopen it.
+reboot/relaunch, access rechecks, guided revocation, explicit relink, export,
+and optional cleanup. It flushes its evidence before intentional termination
+and asks the operator only to reopen it.
 
 ## Criteria
 
@@ -44,21 +43,39 @@ reopen it.
 
 ## Results and measurements
 
-- **Tooling:** Ready. The app takes the persistable grant, stores exact URIs
+- **Archive verification:** The ignored raw ZIP SHA-256 is
+  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`.
+  The exact seven-member allowlist, internal checksums, fixture manifest,
+  build metadata, source commit
+  `a5fa2f657d63b5e89491562456744513266ba861`, corrected v1 compatibility
+  schema, and privacy boundary passed. See the
+  [sanitized report](evidence/android-2026-07-24-sanitized.json).
+- **Tooling:** The app takes the persistable grant, stores exact URIs
   only in private application state, creates one
   `Media-Ecosystem-Phase1-Proof-v1` child and marker, implements all required
   states, and exports only sanitized evidence.
 - **Host validation:** Unit tests cover the state transitions, permission
   representation, URI/volume redaction, marker validation, cleanup refusal,
   explicit relink, and the unavailable-never-deleted invariant.
-- **Physical results:** **Pending / not run.** No restart, reboot, removable
-  media, provider, revocation, or relink behavior is claimed from the build.
-- **Exit criteria:** **Not satisfied at the tooling checkpoint.**
+- **Physical results:** Persisted read/write permission was present; the
+  versioned marker was accessible at export and after a recorded reboot. The
+  exported unavailable-not-deleted assertion was true. No actual unavailable
+  transition, intentional process-termination checkpoint, removal/reinsertion,
+  persisted-grant revocation, or explicit relink was recorded.
+- **Exit criteria:** **Not fully satisfied.** Persisted reboot access is
+  evidenced; removal/unavailable/restoration or relink remains unperformed.
 
 ## Limitations, security, and privacy
 
 - Android 11 and later may restrict which storage roots a provider exposes;
-  the actual primary-tablet picker result must be observed.
+  this run records only the provider behavior actually observed.
+- The tablet uses a shared SIM/microSD tray that is effectively permanent in
+  ordinary use. Physical removal requires case removal and a SIM-eject tool;
+  this slice does not ask the user to repeat it.
+- Safe future alternatives include Android system unmount/eject where
+  available, persisted-permission revocation, provider-unavailability
+  simulation, or a secondary device with conveniently removable storage.
+  None may weaken the unavailable-never-deleted invariant.
 - The proof never scans personal media or siblings. Its isolated marker is
   deterministic synthetic JSON plus a proof-session UUID and hash.
 - Export contains no raw document URI, path, volume identifier, account data,
@@ -70,8 +87,9 @@ reopen it.
 
 - **Production suitability:** Not established. This tests an Android platform
   capability and one evidence workflow, not the final storage abstraction.
-- **Disposition:** **inconclusive** until physical evidence is received; then
-  retain measured results for comparison.
-- **Required follow-up:** Run the guided physical sequence, verify the ZIP,
-  commit only sanitized results, and evaluate issue #2 against its unchanged
-  exit criteria. The later architecture ADR must compare all Phase 1 evidence.
+- **Disposition:** **retain for comparison** for the observed persisted reboot
+  access; the complete issue remains inconclusive.
+- **Required follow-up:** Do not repeat physical tray removal on this primary
+  device. Evaluate one of the documented safe alternatives in a future
+  focused slice, then reassess issue #2. The later architecture ADR must
+  compare all completed and unresolved Phase 1 evidence.

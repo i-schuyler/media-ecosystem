@@ -15,7 +15,8 @@
     "format_matrix",
     "physical_actions",
     "errors",
-    "cleanup"
+    "cleanup",
+    "export"
   ],
   "properties": {
     "schema_version": { "const": "1.0.0" },
@@ -77,6 +78,20 @@
     },
     "physical_actions": { "type": "array" },
     "errors": { "type": "array" },
-    "cleanup": { "type": "object" }
+    "cleanup": { "type": "object" },
+    "export": {
+      "type": "object",
+      "required": [
+        "generated_wall_time_utc",
+        "generated_elapsed_realtime_ms",
+        "privacy"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "generated_wall_time_utc": { "type": "string" },
+        "generated_elapsed_realtime_ms": { "type": "integer", "minimum": 0 },
+        "privacy": { "type": "string" }
+      }
+    }
   }
 }
