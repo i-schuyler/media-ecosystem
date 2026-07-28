@@ -40,11 +40,16 @@ controls-exercised, and completed states. Completion is refused until the
 
 ## Results and measurements
 
-- **Archive verification:** The ignored raw ZIP SHA-256 is
-  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`;
-  its allowlist, internal checksums, source/build, corrected v1 compatibility
+- **Initial archive:** The ignored 2026-07-24 raw ZIP SHA-256 is
+  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`.
+  Its allowlist, internal checksums, source/build, corrected v1 compatibility
   schema, and privacy boundary passed. See the
-  [sanitized report](evidence/android-2026-07-24-sanitized.json).
+  [initial sanitized report](evidence/android-2026-07-24-sanitized.json).
+- **Targeted archive:** The ignored 2026-07-28 raw ZIP SHA-256 is
+  `593b28964854248ccb0b5177d6b27c2c26c43429b08ca3fdd8cecfc437c9d6d2`.
+  Its exact seven-member allowlist, internal checksums, fixture manifest,
+  build metadata, source commit, schema 1.1, and privacy boundary passed. See
+  the [targeted sanitized report](evidence/android-2026-07-28-targeted-retest-sanitized.json).
 - **Tooling:** Foreground media playback permissions and service type,
   MediaSession integration, automatic audio focus, becoming-noisy handling,
   wake mode, synthetic metadata, notification/session controls, and structured
@@ -52,38 +57,37 @@ controls-exercised, and completed states. Completion is refused until the
 - **Screen-off threshold:** 300,000 ms (five minutes). Shorter observations are
   explicitly recorded as not meeting the threshold.
 - **Host validation:** State translation, monotonic-duration rejection, bounded
-  timeout logic, evidence contracts, lint, and APK packaging are testable on
-  the host.
-- **Physical results:** Notification play/pause, lock-screen play/pause and
+  timeout logic, evidence contracts, lint, and APK packaging are covered by
+  automated validation.
+- **Physical controls:** Notification play/pause, lock-screen play/pause and
   metadata, hardware media-button behavior, audio-focus interruption, and
-  becoming-noisy behavior were acknowledged. Playback was active at screen-off
-  and on return, but the monotonic interval was only **137 ms**, not 300,000
-  ms.
-- **Root cause:** The original workflow recorded the brief Android off/on
-  broadcast correctly but had no explicit playback-ready, minimum-duration, or
-  completion gate, so a short event could advance the guided workflow.
-- **Fix:** The retest state machine makes readiness and the five-minute
-  threshold visible, records continuous-playback failure, and refuses
-  completion until the minimum is reached.
-- **Exit criteria:** **Not satisfied.** The media-control observations are
-  retained; only the five-minute screen-off interval requires repetition.
+  becoming-noisy behavior were acknowledged in the initial session.
+- **Screen-off result:** The targeted session completed continuous screen-off
+  playback for **888,433 ms** against the required 300,000 ms minimum. The
+  workflow phase was `COMPLETED`; playback remained continuous, the minimum was
+  reached, and the test was explicitly completed.
+- **Exit criteria:** **Satisfied** for this disposable candidate. The combined
+  initial and targeted evidence covers the required screen-off and system-control
+  dimensions without converting build success into physical evidence.
 
 ## Limitations, security, and privacy
 
 - Bluetooth/hardware-button evidence is conditional on an available test
-  device; absence is recorded rather than silently passed.
+  device; absence would be recorded rather than silently passed.
 - The playback candidate uses bundled synthetic assets and no network,
   personal audio, media-library scan, production queue, or production state.
 - The exported diagnostic log is sanitized and excludes unrelated device or
   application information.
+- This proof establishes capability on the primary Android validation device;
+  it does not establish long-term production suitability or broad device
+  compatibility.
 
 ## Production suitability and disposition
 
 - **Production suitability:** Not established. Media3 1.10.1 is a disposable
   candidate, not the selected production engine.
-- **Disposition:** **retain for comparison** for the acknowledged controls;
-  overall PB-02 remains inconclusive.
-- **Required follow-up:** Run only the hardened five-minute screen-off retest
-  and export the resulting evidence. Do not repeat already acknowledged
-  control/interruption observations unless a future tooling change invalidates
-  them.
+- **Disposition:** **retain for comparison**; PB-02 evidence is complete for
+  this candidate and GitHub issue #3 is closed.
+- **Required follow-up:** None for issue #3. Carry this evidence into the later
+  candidate-stack comparison and architecture ADR. Repeat only if a future
+  candidate or material lifecycle implementation change invalidates it.
