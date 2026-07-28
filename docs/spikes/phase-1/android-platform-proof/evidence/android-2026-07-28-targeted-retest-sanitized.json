@@ -1,0 +1,124 @@
+{
+  "report_schema_version": "1.0.0",
+  "report_date": "2026-07-28",
+  "source_evidence": {
+    "filename": "media-ecosystem-android-proof-20260728T200225Z.zip",
+    "byte_size": 13238,
+    "whole_zip_sha256": "593b28964854248ccb0b5177d6b27c2c26c43429b08ca3fdd8cecfc437c9d6d2",
+    "source_commit": "295849d09f2b709728c4aff980f7b7eac3d9eba5",
+    "evidence_schema_version": "1.1.0",
+    "exact_member_allowlist_verified": true,
+    "internal_checksums_verified": true,
+    "fixture_manifest_consistent": true,
+    "fixture_manifest_sha256": "932e3d343c48440b881e4c8e95b3b9ab75c9fcdca90dd3e0e01d0a1c7e55cbb9",
+    "build_metadata_verified": true,
+    "schema_validation": "passed",
+    "privacy_scan_passed": true,
+    "raw_archive_tracked": false
+  },
+  "candidate": {
+    "name": "AndroidX Media3 ExoPlayer + MediaSessionService",
+    "version": "1.10.1",
+    "disposable_candidate_only": true,
+    "production_engine_selected": false
+  },
+  "environment": {
+    "android_release": "16",
+    "android_build": "BP4A.251205.006.X528USQU9CZE9",
+    "device_model": "samsung SM-X528U",
+    "architecture": "arm64-v8a"
+  },
+  "active_v1_format_contract": {
+    "id": "v1-required-formats-2026-07-28",
+    "required_count": 6,
+    "required_format_ids": [
+      "mp3-v0",
+      "mp3-320",
+      "flac",
+      "aac",
+      "ogg-vorbis",
+      "wav"
+    ],
+    "historical_nonrequired_format_ids": [
+      "alac",
+      "aiff"
+    ]
+  },
+  "screen_off_playback": {
+    "phase": "COMPLETED",
+    "test_started": true,
+    "playback_continued_while_screen_off": true,
+    "minimum_duration_reached": true,
+    "test_completed": true,
+    "controls_exercised_in_targeted_retest": false,
+    "required_duration_ms": 300000,
+    "observed_monotonic_duration_ms": 888433,
+    "result": "passed",
+    "cross_boot_session_total_ms": 0,
+    "cross_boot_session_total_note": "The retained session spans a device reboot, so the independently recorded screen-off monotonic interval is authoritative for this proof."
+  },
+  "wav_targeted_result": {
+    "fixture_id": "wav",
+    "disposition": "passed",
+    "open_attempted": true,
+    "prepare_ready": true,
+    "playback_started": true,
+    "position_advanced": true,
+    "seek_completed": true,
+    "duration_result_ms": 6000,
+    "duration_within_tolerance": true,
+    "end_of_track_observed": true,
+    "required_playback_contract_result": true,
+    "basic_metadata_result": false,
+    "basic_metadata_required_for_pb01": false,
+    "candidate_reported_format": "mime=audio/raw,codecs=,sample_rate_hz=48000,channels=2"
+  },
+  "preserved_prior_evidence": {
+    "source_report": "android-2026-07-24-sanitized.json",
+    "android_format_passes": [
+      "mp3-v0",
+      "mp3-320",
+      "flac",
+      "aac",
+      "ogg-vorbis"
+    ],
+    "acknowledged_control_dimensions": [
+      "notification_play_pause",
+      "lock_screen_play_pause",
+      "lock_screen_metadata",
+      "hardware_media_button",
+      "audio_focus_interruption",
+      "becoming_noisy"
+    ],
+    "targeted_not_run_rows_do_not_revoke_prior_passes": true
+  },
+  "combined_android_format_result": {
+    "mp3-v0": "passed",
+    "mp3-320": "passed",
+    "flac": "passed",
+    "aac": "passed",
+    "ogg-vorbis": "passed",
+    "wav": "passed",
+    "all_six_required_formats_pass": true,
+    "windows_validation_still_required": true
+  },
+  "historical_nonrequired_observations": {
+    "alac": "preserved_nonrequired_historical_observation",
+    "aiff": "preserved_nonrequired_historical_observation",
+    "retained_aiff_errors_are_historical": true,
+    "historical_error_date": "2026-07-24"
+  },
+  "issue_disposition": {
+    "issue_2": "open; no new storage lifecycle evidence",
+    "issue_3": "criteria satisfied by combined screen-off and control evidence",
+    "issue_5": "open; Android complete, Windows pending"
+  },
+  "privacy": {
+    "raw_document_uri_included": false,
+    "personal_path_included": false,
+    "personal_filename_included": false,
+    "account_or_wifi_data_included": false,
+    "credential_or_signing_material_included": false,
+    "media_library_included": false
+  }
+}
