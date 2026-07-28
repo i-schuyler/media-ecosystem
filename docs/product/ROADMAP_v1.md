@@ -44,18 +44,21 @@ evidence covers shared-core execution, non-elevated internal NTFS behavior,
 hashing CPU/memory/power/thermal availability, and cancellation. Issues #6 and
 #7 have evidenced their existing exit criteria; #8 remains open for real
 crash/power/removal durability, and #10 remains open for Android memory and
-cancellation resources. Persisted app-level SAF access is also unproven. This
-evidence does not satisfy the Phase 1 exit gate or select the production stack.
+cancellation resources. Persisted app-level SAF access is partly evidenced but
+issue #2 remains open for an actual unavailable transition and safe relink
+proof. This evidence does not satisfy the Phase 1 exit gate or select the
+production stack.
 
 The disposable
-[Android platform proof](../../spikes/android-platform-proof/README.md) now
-records verified partial Samsung-tablet evidence for issues #2, #3, and the
-Android half of #5. Persisted SAF read/write access and marker access survived
-reboot; notification, lock-screen, hardware-button, audio-focus, and
-becoming-noisy observations were acknowledged; and five active required
-formats passed. The five-minute screen-off interval, corrected WAV
-end-of-track disposition, storage removal/relink alternatives, and Windows
-six-format matrix remain. The 2026-07-28 product-contract amendment removed
+[Android platform proof](../../spikes/android-platform-proof/README.md) records
+verified Samsung-tablet evidence for issues #2, #3, and the Android half of #5.
+Persisted SAF read/write access and marker access survived reboot;
+notification, lock-screen, hardware-button, audio-focus, and becoming-noisy
+observations were acknowledged; continuous screen-off playback completed for
+888,433 ms against the required 300,000 ms minimum; and all six amended v1
+formats passed on Android. Issue #3 is closed. Issue #2 remains open for an
+actual unavailable/removal/relink path, and issue #5 remains open for the exact
+six-format Windows matrix. The 2026-07-28 product-contract amendment removed
 ALAC and AIFF from v1 without rewriting the historical eight-format run.
 
 Prove the highest-risk capabilities before choosing the production stack:
