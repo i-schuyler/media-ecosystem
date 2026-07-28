@@ -17,12 +17,16 @@
 ## Reproduction
 
 The active corpus and runner use stable IDs for MP3 V0, MP3 320, FLAC, AAC-LC
-in M4A, Ogg Vorbis, and WAV. The current app exposes a **Run targeted WAV
+in M4A, Ogg Vorbis, and WAV. The hardened app exposes a **Run targeted WAV
 check with bounded timeouts** action so the five already-valid Android formats
 need not be repeated. It initializes all six active results as `not run` and
 updates WAV by ID, not positional index. The fixture generator, manifest,
 hashes, and exact arguments are in the
 [proof workspace](../../../../spikes/android-platform-proof/README.md).
+
+The combined disposition preserves the five successful 2026-07-24 format
+observations and adds the corrected 2026-07-28 WAV result. Targeted `not run`
+rows do not erase prior verified passes.
 
 ## Criteria
 
@@ -54,31 +58,36 @@ hashes, provenance, membership, and strict size limits.
 | FLAC | Passed |
 | AAC | Passed |
 | Ogg Vorbis | Passed |
-| WAV | Failed under original conflated criteria; targeted corrected retest required |
+| WAV | Passed in corrected targeted retest |
 
-- **Archive verification:** The ignored raw ZIP SHA-256 is
-  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`;
-  allowlist, internal hashes, historical manifest, build/source, corrected v1
-  compatibility schema, and privacy checks passed. See the
-  [sanitized report](evidence/android-2026-07-24-sanitized.json).
-- **Physical results:** MP3 V0, MP3 320, FLAC, AAC, and Ogg Vorbis passed the
-  original complete checks. WAV opened, prepared, played, advanced, sought,
-  and reported 6,000 ms, but the original result recorded both optional
-  metadata and end-of-track as false and produced a failed aggregate
-  disposition. The diagnostic says the track ended without every original
-  intermediate/metadata observation; the corrected runner must record the end
-  dimension independently before WAV can pass.
+- **Initial archive:** The ignored 2026-07-24 raw ZIP SHA-256 is
+  `882dd5f54d79094021b1228c92ec08e3797c341fc995b877deb8ccd4f24069e5`.
+  Its allowlist, internal hashes, historical manifest, build/source, corrected
+  v1 compatibility schema, and privacy checks passed. See the
+  [initial sanitized report](evidence/android-2026-07-24-sanitized.json).
+- **Targeted archive:** The ignored 2026-07-28 raw ZIP SHA-256 is
+  `593b28964854248ccb0b5177d6b27c2c26c43429b08ca3fdd8cecfc437c9d6d2`.
+  Its exact seven-member allowlist, internal checksums, fixture manifest,
+  build metadata, source commit, schema 1.1, and privacy boundary passed. See
+  the [targeted sanitized report](evidence/android-2026-07-28-targeted-retest-sanitized.json).
+- **Initial physical results:** MP3 V0, MP3 320, FLAC, AAC, and Ogg Vorbis
+  passed the complete original checks.
+- **Corrected WAV result:** WAV opened, prepared, started playback, advanced,
+  completed a bounded seek, reported 6,000 ms within tolerance, and reached
+  end-of-track. Optional metadata remained false and is explicitly not a PB-01
+  requirement.
+- **Combined Android result:** All six amended v1 required formats pass on the
+  primary Android validation device.
 - **Historical nonrequired observations:** ALAC and AIFF remain in the
   2026-07-24 sanitized report as `nonrequired_historical_observation`. ALAC
   opened/played/advanced/sought/reported duration but failed the original
   aggregate criteria; AIFF failed container parsing. Neither is an active v1
   requirement after the 2026-07-28 product-priority amendment.
-- **Issue #5:** Must remain open after Android evidence because the same
-  required matrix still must pass or receive explicit dispositions on Windows.
-- **PB-01:** Amended to the exact six-format v1 set; not yet satisfied because
-  WAV needs corrected Android evidence and all six formats need Windows
-  evidence. The amendment does not convert the original eight-format run into
-  a pass.
+- **Issue #5:** Remains open because the same six required formats still need
+  Windows validation.
+- **PB-01:** Android is complete under the exact six-format v1 contract;
+  cross-platform PB-01 remains open until Windows evidence is complete. The
+  amendment does not convert the original eight-format run into a pass.
 
 ## Limitations, security, and privacy
 
@@ -86,14 +95,17 @@ hashes, provenance, membership, and strict size limits.
   it; absence is explicit.
 - Fixture metadata support may vary by container/decoder and is recorded
   separately; PB-01 does not require optional WAV tags.
-- The app uses no personal media or network input. Evidence normally exports
-  hashes/manifests, not audio binaries.
+- The app uses no personal media or network input. Evidence exports
+  hashes/manifests and structured observations, not audio binaries.
+- One Android candidate and one device do not establish production suitability
+  or broad device compatibility.
 
 ## Production suitability and disposition
 
-- **Production suitability:** Not established; one candidate and one device
-  half are insufficient for selection.
-- **Disposition:** **retain for comparison** for five Android passes;
-  cross-platform PB-01 remains inconclusive.
-- **Required follow-up:** Run only the targeted corrected WAV check and export,
-  then complete the exact six-format Windows matrix without weakening PB-01.
+- **Production suitability:** Not established; the Android half is complete but
+  cross-platform evidence and candidate comparison remain.
+- **Disposition:** **retain for comparison**; the Android half of issue #5 is
+  complete and all six Windows checks remain.
+- **Required follow-up:** Complete the exact six-format Windows matrix without
+  weakening PB-01, then use the combined platform evidence in the later
+  stack-selection ADR.
