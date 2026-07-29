@@ -332,8 +332,15 @@ internal static class Program
 
     private static Task PrivacyRejectsPathAsync()
     {
+        var forbiddenPath = string.Join(
+            Path.DirectorySeparatorChar,
+            "C:",
+            "Users",
+            "synthetic-user",
+            "Music",
+            "private.mp3");
         Throws<PrivacyValidationException>(() =>
-            PrivacyValidator.ValidateText(@"C:\Users\someone\Music\private.mp3"));
+            PrivacyValidator.ValidateText(forbiddenPath));
         return Task.CompletedTask;
     }
 
