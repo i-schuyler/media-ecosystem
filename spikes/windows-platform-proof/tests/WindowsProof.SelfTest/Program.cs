@@ -21,6 +21,7 @@ internal static class Program
         ("lifecycle_all_required_dimensions_pass", LifecyclePassesAsync),
         ("lifecycle_human_observation_not_automatic", LifecycleHumanObservationRequiredAsync),
         ("checkpoint_round_trip_preserves_partial_results", CheckpointRoundTripAsync),
+        ("checkpoint_concurrent_saves_are_serialized", CheckpointConcurrentSavesAsync),
         ("checkpoint_invalid_primary_recovers_previous", CheckpointRecoveryAsync),
         ("restart_checkpoint_state_round_trip", RestartCheckpointRoundTripAsync),
         ("evidence_schema_accepts_valid_partial_session", EvidenceSchemaValidAsync),
@@ -219,6 +220,26 @@ internal static class Program
         True(loaded.Found);
         Equal(1, loaded.State.FormatResults.Count);
         Equal("mp3-v0", loaded.State.FormatResults[0].FixtureId);
+    }
+
+    private static async Task CheckpointConcurrentSavesAsync()
+    {
+        using TemporaryDirectory temporary = new();
+        CheckpointStore store = new(temporary.Path);
+        List<ProofSessionState> states = Enumerable.Range(0, 8)
+            .Select(index =>
+            {
+                ProofSessionState state = ProofSessionState.CreateNew();
+                state.Failures.Add($"save-{index}");
+                return state;
+            })
+            .ToList();
+
+        await Task.WhenAll(states.Select(state => store.SaveAsync(state)));
+        CheckpointLoadResult loaded = await store.LoadAsync();
+        True(loaded.Found);
+        Equal(1, loaded.State.Failures.Count);
+        True(loaded.State.Failures[0].StartsWith("save-", StringComparison.Ordinal));
     }
 
     private static async Task CheckpointRecoveryAsync()

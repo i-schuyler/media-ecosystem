@@ -2,6 +2,7 @@ namespace MediaEcosystem.WindowsProof;
 
 internal sealed class SessionController
 {
+    private readonly SemaphoreSlim saveGate = new(1, 1);
     private readonly CheckpointStore store = new(ProofRuntime.PrivateCheckpointRoot);
 
     public ProofSessionState State { get; private set; } = ProofSessionState.CreateNew();
@@ -42,15 +43,23 @@ internal sealed class SessionController
         });
     }
 
-    public Task SaveAsync()
+    public async Task SaveAsync()
     {
-        State.Lifecycle.Disposition = ProofAggregators.EvaluateLifecycle(State.Lifecycle);
-        foreach (FormatResult result in State.FormatResults)
+        await saveGate.WaitAsync().ConfigureAwait(false);
+        try
         {
-            result.Disposition = ProofAggregators.EvaluateFormat(result);
-        }
+            State.Lifecycle.Disposition = ProofAggregators.EvaluateLifecycle(State.Lifecycle);
+            foreach (FormatResult result in State.FormatResults)
+            {
+                result.Disposition = ProofAggregators.EvaluateFormat(result);
+            }
 
-        return store.SaveAsync(State);
+            await store.SaveAsync(State).ConfigureAwait(false);
+        }
+        finally
+        {
+            saveGate.Release();
+        }
     }
 
     public async Task BeginRestartCheckpointAsync()

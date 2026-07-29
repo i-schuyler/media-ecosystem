@@ -453,7 +453,16 @@ internal sealed class MainForm : Form
 
         BeginInvoke(async () =>
         {
-            await session.SaveAsync();
+            try
+            {
+                await session.SaveAsync();
+            }
+            catch (Exception exception)
+            {
+                session.State.Failures.Add(
+                    $"checkpoint_save_failed:{exception.GetType().Name}");
+            }
+
             RefreshStatus();
         });
     }
@@ -468,7 +477,10 @@ internal sealed class MainForm : Form
         };
         lifecyclePlayer?.ObservePowerMode(mode);
         session.AddDiagnostic("power_mode", "observed", mode);
-        _ = session.SaveAsync();
+        if (lifecyclePlayer is null)
+        {
+            OnLifecycleObservation(this, EventArgs.Empty);
+        }
     }
 
     private void RefreshStatus()
