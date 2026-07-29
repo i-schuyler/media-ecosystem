@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <WindowsSdkPackageVersion>10.0.26100.84</WindowsSdkPackageVersion>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AssemblyName>MediaEcosystem.WindowsProof</AssemblyName>
+    <RootNamespace>MediaEcosystem.WindowsProof</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationVersion>0.1.0</ApplicationVersion>
+    <Version>0.1.0</Version>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <SourceCommit Condition="'$(SourceCommit)' == '' and '$(SOURCE_COMMIT)' != ''">$(SOURCE_COMMIT)</SourceCommit>
+    <SourceCommit Condition="'$(SourceCommit)' == ''">unknown-local-build</SourceCommit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WindowsProof.Core\WindowsProof.Core.csproj" />
+    <AssemblyMetadata Include="SourceCommit" Value="$(SourceCommit)" />
+    <AssemblyMetadata Include="BuildConfiguration" Value="$(Configuration)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\..\android-platform-proof\app\src\main\assets\fixtures\**\*">
+      <Link>fixtures\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="..\..\schemas\windows-proof-evidence.schema.json">
+      <Link>schemas\windows-proof-evidence.schema.json</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="WriteSourceCommitMarker" AfterTargets="Publish">
+    <WriteLinesToFile
+      File="$(PublishDir)build-source-commit.txt"
+      Lines="$(SourceCommit)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+  </Target>
+</Project>

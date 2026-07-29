@@ -41,6 +41,17 @@ Issue #2 remains open for an actual unavailable/removal/relink path, and issue
 #5 remains open for the exact six-format Windows matrix. Build success is not
 physical evidence, and no production candidate is selected.
 
+The disposable
+[Windows platform proof](../../spikes/windows-platform-proof/README.md) prepares
+one combined tooling checkpoint for GitHub issues #4 and #5. It pins .NET SDK
+8.0.423, runtime 8.0.29, and Windows SDK .NET reference 10.0.26100.84; reuses
+the single exact six-fixture corpus; separates PB-01 format execution from a
+dedicated automatic-SMTC lifecycle player; preserves partial results through
+one private restart checkpoint; and exports a schema-validated, privacy-checked
+seven-member evidence ZIP. Build, test, publish, and CI results remain tooling
+evidence only. No Surface Book 3 playback, codec, SMTC, sleep/wake, or restart
+result is claimed, and no production candidate is selected.
+
 ## 1. Prove Android SD-card root access and persisted permission.
 
 - **Purpose:** Establish that the Android validation device can safely retain
@@ -113,6 +124,12 @@ physical evidence, and no production candidate is selected.
   media controls through the required tested lifecycle transitions.
 - **Expected ADR or follow-up artifact:** Windows playback evidence report and
   candidate comparison input for the stack-selection ADR.
+- **Current status:** The pinned disposable Windows tooling, guided physical
+  protocol, evidence schema/exporter, deterministic lifecycle aggregation, and
+  self-contained `win-x64` handoff are prepared. Physical playback, automatic
+  SMTC visibility/commands, sleep/wake, and restart observations have not run.
+  Issue #4 remains open. See the
+  [issue #4 report](../spikes/phase-1/windows-platform-proof/issue-4-windows-playback-smtc.md).
 
 ## 4. Validate all required Bandcamp formats across Android and Windows.
 
@@ -138,9 +155,13 @@ physical evidence, and no production candidate is selected.
   V0, MP3 320, FLAC, AAC, Ogg Vorbis, and corrected WAV open/prepare/start,
   advancement, seek, duration, and end-of-track. Optional WAV metadata remains
   separate and is not required by PB-01. Historical ALAC and AIFF observations
-  are preserved outside active v1 scope. The Android half is complete; the
-  entire exact six-format Windows half remains pending. See the
+  are preserved outside active v1 scope. The Android half is complete. The
+  Windows exact-six runner, fail-closed shared-corpus verification,
+  failure-continuation behavior, and self-contained handoff are prepared, but
+  every Windows physical row remains `not_run`. See the
   [Android issue #5 report](../spikes/phase-1/android-platform-proof/issue-5-android-formats.md).
+  The [Windows issue #5 report](../spikes/phase-1/windows-platform-proof/issue-5-windows-formats.md)
+  records the pending Surface Book 3 matrix. Issue #5 remains open.
 
 ## 5. Prove portable root-relative path normalization.
 

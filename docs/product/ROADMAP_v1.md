@@ -61,6 +61,17 @@ actual unavailable/removal/relink path, and issue #5 remains open for the exact
 six-format Windows matrix. The 2026-07-28 product-contract amendment removed
 ALAC and AIFF from v1 without rewriting the historical eight-format run.
 
+The disposable
+[Windows platform proof](../../spikes/windows-platform-proof/README.md) prepares
+the combined issue #4 / Windows issue #5 tooling checkpoint: a pinned .NET 8
+Windows Forms diagnostic using `Windows.Media.Playback.MediaPlayer`, automatic
+SMTC command-manager observation, the exact shared six-fixture corpus, bounded
+format and lifecycle aggregation, one private restart checkpoint, and a
+sanitized seven-member evidence ZIP. Compilation, deterministic tests, and a
+self-contained `win-x64` artifact are tooling evidence only. The Surface Book
+3 physical matrix and lifecycle session remain pending, both issues remain
+open, and this candidate does not select the production stack.
+
 Prove the highest-risk capabilities before choosing the production stack:
 
 - Android SD-card root access and durable permissions

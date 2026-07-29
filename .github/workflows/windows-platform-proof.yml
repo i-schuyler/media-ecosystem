@@ -1,0 +1,209 @@
+name: Windows platform proof tooling
+
+on:
+  pull_request:
+    paths:
+      - ".github/scripts/check-foundation.sh"
+      - ".github/workflows/windows-platform-proof.yml"
+      - "spikes/windows-platform-proof/**"
+      - "spikes/android-platform-proof/app/src/main/assets/fixtures/**"
+      - "spikes/android-platform-proof/scripts/verify_fixtures.py"
+      - "spikes/shared-core-foundations/**"
+      - "docs/spikes/phase-1/windows-platform-proof/**"
+      - "docs/implementation/PHASE_1_CAPABILITY_ISSUES.md"
+      - "docs/implementation/SUPPORTED_TEST_DEVICE_MATRIX.md"
+      - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+      - "docs/product/Media_Ecosystem_v1.0.0_DoD.md"
+      - "docs/product/ROADMAP_v1.md"
+      - "docs/product/V1_ACCEPTANCE_MATRIX.md"
+      - "README.md"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/scripts/check-foundation.sh"
+      - ".github/workflows/windows-platform-proof.yml"
+      - "spikes/windows-platform-proof/**"
+      - "spikes/android-platform-proof/app/src/main/assets/fixtures/**"
+      - "spikes/android-platform-proof/scripts/verify_fixtures.py"
+      - "spikes/shared-core-foundations/**"
+      - "docs/spikes/phase-1/windows-platform-proof/**"
+      - "docs/implementation/PHASE_1_CAPABILITY_ISSUES.md"
+      - "docs/implementation/SUPPORTED_TEST_DEVICE_MATRIX.md"
+      - "docs/privacy/PRIVACY_AND_FIXTURE_POLICY.md"
+      - "docs/product/Media_Ecosystem_v1.0.0_DoD.md"
+      - "docs/product/ROADMAP_v1.md"
+      - "docs/product/V1_ACCEPTANCE_MATRIX.md"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  tooling:
+    name: Build disposable self-contained Windows proof
+    runs-on: windows-latest
+    env:
+      PROOF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+
+    defaults:
+      run:
+        working-directory: spikes/windows-platform-proof
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up pinned .NET 8 SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: "8.0.423"
+          cache: true
+          cache-dependency-path: |
+            spikes/windows-platform-proof/src/WindowsProof.Core/packages.lock.json
+            spikes/windows-platform-proof/src/WindowsProof.App/packages.lock.json
+            spikes/windows-platform-proof/tests/WindowsProof.SelfTest/packages.lock.json
+
+      - name: Set up pinned Python parser tooling
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14.3"
+          cache: pip
+          cache-dependency-path: spikes/windows-platform-proof/scripts/requirements-ci.txt
+
+      - name: Record tooling-only boundary
+        shell: pwsh
+        run: |
+          dotnet --info
+          Write-Host "Build and CI success are tooling evidence only."
+          Write-Host "PB-01 and PB-05 require the physical Microsoft Surface Book 3 session."
+
+      - name: Parse PowerShell, JSON, YAML, and XML
+        shell: pwsh
+        working-directory: .
+        run: |
+          & ./spikes/windows-platform-proof/scripts/Test-PowerShellSyntax.ps1
+          python -m pip install --disable-pip-version-check `
+            -r ./spikes/windows-platform-proof/scripts/requirements-ci.txt
+          python ./spikes/windows-platform-proof/scripts/validate_structured_files.py .
+
+      - name: Verify the single canonical fixture corpus
+        shell: pwsh
+        run: |
+          ./scripts/Verify-Fixtures.ps1 `
+            -FixtureRoot ../android-platform-proof/app/src/main/assets/fixtures
+          python ../android-platform-proof/scripts/verify_fixtures.py
+
+      - name: Restore locked dependencies
+        shell: pwsh
+        run: dotnet restore MediaEcosystem.WindowsProof.sln --locked-mode --configfile NuGet.Config
+
+      - name: Compile with warnings treated as errors
+        shell: pwsh
+        run: dotnet build MediaEcosystem.WindowsProof.sln --configuration Release --no-restore
+
+      - name: Run deterministic headless self-tests
+        shell: pwsh
+        run: >-
+          dotnet run
+          --project tests/WindowsProof.SelfTest/WindowsProof.SelfTest.csproj
+          --configuration Release --no-build --no-restore --
+          ${{ github.workspace }}
+
+      - name: Publish unpacked self-contained win-x64 proof
+        shell: pwsh
+        run: >-
+          dotnet publish src/WindowsProof.App/WindowsProof.App.csproj
+          --configuration Release --runtime win-x64 --self-contained true
+          --no-restore --output out/publish
+          /p:SourceCommit=$env:PROOF_SOURCE_COMMIT
+
+      - name: Verify published fixtures, runtime, schema, and key absence
+        shell: pwsh
+        run: >-
+          ./scripts/Verify-Publish.ps1 -PublishRoot out/publish
+          -ExpectedSourceCommit $env:PROOF_SOURCE_COMMIT
+
+      - name: Create and verify handoff artifact ZIP
+        shell: pwsh
+        run: |
+          $artifact = "out/disposable-windows-platform-proof-$env:PROOF_SOURCE_COMMIT.zip"
+          ./scripts/Package-Artifact.ps1 -PublishRoot out/publish -OutputZip $artifact
+          $file = Get-Item -LiteralPath $artifact
+          $hash = (Get-FileHash -LiteralPath $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
+          "WINDOWS_PROOF_ARTIFACT=$artifact" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "WINDOWS_PROOF_ARTIFACT_NAME=$($file.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "WINDOWS_PROOF_ARTIFACT_BYTES=$($file.Length)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "WINDOWS_PROOF_ARTIFACT_SHA256=$hash" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run shared-core regression suite and compile Python
+        shell: pwsh
+        working-directory: .
+        run: |
+          python -m compileall -q `
+            ./spikes/android-platform-proof/scripts `
+            ./spikes/shared-core-foundations/scripts `
+            ./spikes/windows-platform-proof/scripts
+          python ./spikes/shared-core-foundations/scripts/harness.py `
+            verify --seeds 7,20260723
+
+      - name: Run foundation, diff, tracked-file, secret, media, size, and mode audits
+        shell: bash
+        working-directory: .
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BEFORE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [[ "${EVENT_NAME}" == "pull_request" ]]; then
+            diff_range="${BASE_SHA}...${HEAD_SHA}"
+          elif git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            diff_range="${BEFORE_SHA}..${HEAD_SHA}"
+          else
+            empty_tree="$(git hash-object -t tree /dev/null)"
+            diff_range="${empty_tree}..${HEAD_SHA}"
+          fi
+          bash .github/scripts/check-foundation.sh "${diff_range}"
+          git diff --check "${diff_range}"
+          if git ls-files | grep -E '(^|/)(bin|obj|out)/' ; then
+            echo "Generated Windows output is tracked." >&2
+            exit 1
+          fi
+          if git ls-files | grep -Ei '\.(jks|keystore|p12|pfx|pem|key)$' ; then
+            echo "Signing or private-key material is tracked." >&2
+            exit 1
+          fi
+          while IFS= read -r path; do
+            size="$(wc -c < "${path}")"
+            if [[ "${size}" -gt 10000000 ]]; then
+              echo "Tracked file exceeds 10 MB: ${path}" >&2
+              exit 1
+            fi
+          done < <(git ls-files)
+          invalid_modes="$(git ls-files --stage | awk '$1 != "100644" && $1 != "100755" {print}')"
+          if [[ -n "${invalid_modes}" ]]; then
+            echo "Unexpected tracked file mode:" >&2
+            echo "${invalid_modes}" >&2
+            exit 1
+          fi
+          git status --short
+
+      - name: Report artifact properties
+        shell: pwsh
+        run: |
+          Write-Host "Artifact filename: $env:WINDOWS_PROOF_ARTIFACT_NAME"
+          Write-Host "Artifact bytes: $env:WINDOWS_PROOF_ARTIFACT_BYTES"
+          Write-Host "Artifact SHA-256: $env:WINDOWS_PROOF_ARTIFACT_SHA256"
+          Write-Host "This is a tooling artifact, not physical PB-01 or PB-05 evidence."
+
+      - name: Upload disposable proof artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: disposable-windows-platform-proof-${{ env.PROOF_SOURCE_COMMIT }}
+          path: spikes/windows-platform-proof/${{ env.WINDOWS_PROOF_ARTIFACT }}
+          if-no-files-found: error
+          retention-days: 14

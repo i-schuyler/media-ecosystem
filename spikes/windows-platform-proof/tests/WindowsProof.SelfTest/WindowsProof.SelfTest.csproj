@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>MediaEcosystem.WindowsProof.SelfTest</AssemblyName>
+    <RootNamespace>MediaEcosystem.WindowsProof.SelfTest</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WindowsProof.Core\WindowsProof.Core.csproj" />
+  </ItemGroup>
+</Project>

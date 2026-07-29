@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>MediaEcosystem.WindowsProof.Core</AssemblyName>
+    <RootNamespace>MediaEcosystem.WindowsProof</RootNamespace>
+  </PropertyGroup>
+</Project>

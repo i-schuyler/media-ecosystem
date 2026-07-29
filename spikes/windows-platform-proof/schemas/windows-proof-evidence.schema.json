@@ -1,0 +1,292 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://media-ecosystem.invalid/schema/windows-platform-proof-evidence-v1.json",
+  "title": "Disposable Windows platform proof evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "build",
+    "environment",
+    "fixture_manifest_sha256",
+    "format_contract_id",
+    "active_required_format_ids",
+    "historical_nonrequired_format_ids",
+    "format_results",
+    "pb01_windows_disposition",
+    "lifecycle",
+    "pb05_disposition",
+    "session_started_utc",
+    "session_ended_utc",
+    "session_started_monotonic_ms",
+    "session_ended_monotonic_ms",
+    "session_monotonic_duration_ms",
+    "failures",
+    "limitations",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "build": {
+      "type": "object",
+      "required": [
+        "application_version",
+        "source_commit",
+        "build_configuration",
+        "candidate",
+        "target_framework",
+        "runtime_identifier",
+        "dotnet_sdk",
+        "dotnet_runtime",
+        "windows_sdk_reference_package",
+        "packaging",
+        "package_identity",
+        "installer",
+        "signing_material_required"
+      ],
+      "properties": {
+        "application_version": { "type": "string" },
+        "source_commit": { "type": "string" },
+        "build_configuration": { "const": "Release" },
+        "candidate": {
+          "const": "Windows.Media.Playback.MediaPlayer automatic SMTC"
+        },
+        "target_framework": {
+          "const": "net8.0-windows10.0.19041.0"
+        },
+        "runtime_identifier": { "const": "win-x64" },
+        "dotnet_sdk": { "const": "8.0.423" },
+        "dotnet_runtime": { "const": "8.0.29" },
+        "windows_sdk_reference_package": {
+          "const": "Microsoft.Windows.SDK.NET.Ref/10.0.26100.84"
+        },
+        "packaging": { "const": "unpacked_self_contained" },
+        "package_identity": { "const": false },
+        "installer": { "const": false },
+        "signing_material_required": { "const": false }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": [
+        "edition",
+        "display_version",
+        "build",
+        "architecture",
+        "dotnet_runtime",
+        "approved_device_label"
+      ],
+      "properties": {
+        "edition": { "type": "string" },
+        "display_version": { "type": "string" },
+        "build": { "type": "string" },
+        "architecture": { "type": "string" },
+        "dotnet_runtime": { "type": "string" },
+        "approved_device_label": { "const": "Microsoft Surface Book 3" }
+      }
+    },
+    "fixture_manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "format_contract_id": {
+      "const": "v1-required-formats-2026-07-28"
+    },
+    "active_required_format_ids": {
+      "type": "array",
+      "prefixItems": [
+        { "const": "mp3-v0" },
+        { "const": "mp3-320" },
+        { "const": "flac" },
+        { "const": "aac" },
+        { "const": "ogg-vorbis" },
+        { "const": "wav" }
+      ],
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "historical_nonrequired_format_ids": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "enum": ["aiff", "alac"] }
+    },
+    "format_results": {
+      "type": "array",
+      "maxItems": 6,
+      "items": { "$ref": "#/$defs/formatResult" }
+    },
+    "pb01_windows_disposition": { "$ref": "#/$defs/disposition" },
+    "lifecycle": { "$ref": "#/$defs/lifecycle" },
+    "pb05_disposition": { "$ref": "#/$defs/disposition" },
+    "session_started_utc": { "type": "string", "format": "date-time" },
+    "session_ended_utc": { "type": "string", "format": "date-time" },
+    "session_started_monotonic_ms": { "type": "integer", "minimum": 0 },
+    "session_ended_monotonic_ms": { "type": "integer", "minimum": 0 },
+    "session_monotonic_duration_ms": { "type": "integer", "minimum": 0 },
+    "failures": { "type": "array", "items": { "type": "string" } },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "privacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "username_included",
+        "hostname_included",
+        "account_data_included",
+        "serial_number_included",
+        "machine_or_volume_identifier_included",
+        "absolute_path_included",
+        "environment_variables_included",
+        "installed_apps_included",
+        "personal_media_data_included",
+        "credentials_or_signing_material_included",
+        "audio_exported"
+      ],
+      "properties": {
+        "username_included": { "const": false },
+        "hostname_included": { "const": false },
+        "account_data_included": { "const": false },
+        "serial_number_included": { "const": false },
+        "machine_or_volume_identifier_included": { "const": false },
+        "absolute_path_included": { "const": false },
+        "environment_variables_included": { "const": false },
+        "installed_apps_included": { "const": false },
+        "personal_media_data_included": { "const": false },
+        "credentials_or_signing_material_included": { "const": false },
+        "audio_exported": { "const": false }
+      }
+    }
+  },
+  "$defs": {
+    "disposition": {
+      "enum": ["passed", "failed", "inconclusive", "not_run"]
+    },
+    "formatResult": {
+      "type": "object",
+      "required": [
+        "fixture_id",
+        "verified_filename",
+        "verified_size_bytes",
+        "verified_sha256",
+        "open_attempted",
+        "source_accepted",
+        "media_opened_prepared",
+        "playback_started",
+        "position_advanced",
+        "seek_requested",
+        "seek_completed",
+        "seek_tolerance_ms",
+        "expected_duration_ms",
+        "duration_tolerance_ms",
+        "duration_within_tolerance",
+        "end_of_track_observed",
+        "extracted_file_metadata",
+        "candidate_reported_media_properties",
+        "warnings",
+        "errors",
+        "timeouts",
+        "elapsed_monotonic_ms",
+        "disposition"
+      ],
+      "properties": {
+        "fixture_id": {
+          "enum": ["mp3-v0", "mp3-320", "flac", "aac", "ogg-vorbis", "wav"]
+        },
+        "verified_filename": { "type": "string" },
+        "verified_size_bytes": { "type": "integer", "minimum": 1 },
+        "verified_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "open_attempted": { "type": "boolean" },
+        "source_accepted": { "type": "boolean" },
+        "media_opened_prepared": { "type": "boolean" },
+        "playback_started": { "type": "boolean" },
+        "position_advanced": { "type": "boolean" },
+        "seek_requested": { "type": "boolean" },
+        "seek_completed": { "type": "boolean" },
+        "seek_tolerance_ms": { "type": "integer", "minimum": 0 },
+        "expected_duration_ms": { "type": "integer", "minimum": 1 },
+        "actual_duration_ms": { "type": "integer", "minimum": 0 },
+        "duration_tolerance_ms": { "type": "integer", "minimum": 1 },
+        "duration_within_tolerance": { "type": "boolean" },
+        "end_of_track_observed": { "type": "boolean" },
+        "extracted_file_metadata": { "type": "object" },
+        "applied_system_metadata": { "type": ["object", "null"] },
+        "candidate_reported_media_properties": { "type": "object" },
+        "warnings": { "type": "array", "items": { "type": "string" } },
+        "errors": { "type": "array", "items": { "type": "string" } },
+        "timeouts": { "type": "array", "items": { "type": "string" } },
+        "elapsed_monotonic_ms": { "type": "integer", "minimum": 0 },
+        "disposition": { "$ref": "#/$defs/disposition" }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": [
+        "fixture_id",
+        "fixture_verified",
+        "playback_began",
+        "automatic_smtc_candidate_active",
+        "applied_system_metadata",
+        "extracted_file_metadata",
+        "system_commands",
+        "manual_acknowledgements",
+        "ready_for_sleep_marked",
+        "playback_state_immediately_before_sleep",
+        "suspend_observed",
+        "resume_observed",
+        "power_events",
+        "wake_result_recorded",
+        "playback_state_after_wake",
+        "automatic_smtc_candidate_active_after_wake",
+        "restart_checkpoint",
+        "failures",
+        "limitations",
+        "disposition"
+      ],
+      "properties": {
+        "fixture_id": { "const": "mp3-v0" },
+        "fixture_verified": { "type": "boolean" },
+        "playback_began": { "type": "boolean" },
+        "automatic_smtc_candidate_active": { "type": "boolean" },
+        "applied_system_metadata": { "type": "object" },
+        "extracted_file_metadata": { "type": "object" },
+        "system_commands": { "type": "array" },
+        "manual_acknowledgements": { "type": "array" },
+        "ready_for_sleep_marked": { "type": "boolean" },
+        "playback_state_immediately_before_sleep": { "type": "string" },
+        "suspend_observed": { "type": "boolean" },
+        "resume_observed": { "type": "boolean" },
+        "power_events": { "type": "array" },
+        "wake_result_recorded": { "type": "boolean" },
+        "playback_state_after_wake": { "type": "string" },
+        "automatic_smtc_candidate_active_after_wake": { "type": "boolean" },
+        "restart_checkpoint": {
+          "type": "object",
+          "required": [
+            "status",
+            "generation",
+            "clean_reopen_observed",
+            "new_playback_started_after_reopen",
+            "absolute_path_exported",
+            "storage_description",
+            "failures"
+          ],
+          "properties": {
+            "status": {
+              "enum": ["not_started", "awaiting_reopen", "reopened", "completed", "failed"]
+            },
+            "generation": { "type": "integer", "minimum": 0 },
+            "clean_reopen_observed": { "type": "boolean" },
+            "new_playback_started_after_reopen": { "type": "boolean" },
+            "absolute_path_exported": { "const": false },
+            "storage_description": { "const": "private_local_application_data" },
+            "failures": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "failures": { "type": "array", "items": { "type": "string" } },
+        "limitations": { "type": "array", "items": { "type": "string" } },
+        "disposition": { "$ref": "#/$defs/disposition" }
+      }
+    }
+  }
+}

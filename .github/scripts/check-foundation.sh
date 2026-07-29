@@ -85,7 +85,7 @@ for path in "${required[@]}"; do
 done
 
 apache_license_sha256="c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
-actual_license_sha256="$(sha256sum LICENSE | cut -d ' ' -f 1)"
+actual_license_sha256="$(git cat-file blob :LICENSE | sha256sum | cut -d ' ' -f 1)"
 
 if [[ "$actual_license_sha256" != "$apache_license_sha256" ]]; then
   echo "LICENSE is not the complete canonical Apache License 2.0 text."
