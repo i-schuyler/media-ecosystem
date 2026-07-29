@@ -35,10 +35,13 @@ The disposable
 [Android platform proof](../../spikes/android-platform-proof/README.md) is
 collecting app-level SAF, background playback/system controls, and
 required-format evidence on this exact tablet. Its
-[evidence index](../spikes/phase-1/android-platform-proof/README.md) records a
-verified 2026-07-24 partial run. Persisted access and several system controls
-were observed, but the five-minute screen-off interval and targeted WAV retest
-remain. Build success alone does not broaden support or satisfy a physical row.
+[evidence index](../spikes/phase-1/android-platform-proof/README.md) records the
+verified 2026-07-24 initial run and 2026-07-28 targeted retest. Continuous
+screen-off playback completed for 888,433 ms against the 300,000 ms minimum,
+and corrected WAV open/prepare/start, advancement, seek, duration, and natural
+end passed without requiring optional metadata. All six active formats pass on
+Android. Issue #2 still lacks an actual unavailable/removal/relink transition;
+build success alone does not broaden support or satisfy another physical row.
 
 The 2026-07-23 Windows shared-core run records Microsoft Surface Book 3,
 Windows 11 Pro 25H2 version `10.0.26200` / build `26200.8894`, 64-bit NTFS,
@@ -49,6 +52,16 @@ bounded SHA-256/resource measurements, and automated cancellation; see the
 It does not establish Windows playback, Explorer monitoring, removable-media
 failure handling, or sudden-power-loss durability. Python remains disposable
 evidence tooling, not a production requirement.
+
+The disposable
+[Windows platform proof](../../spikes/windows-platform-proof/README.md) prepares
+the issue #4 and Windows issue #5 tooling for this exact device. The pinned
+.NET 8 `MediaPlayer` candidate, exact shared six-fixture verification, bounded
+format runner, automatic command-manager lifecycle guide, sleep/wake observer,
+private restart checkpoint, sanitized evidence export, and self-contained
+`win-x64` artifact are prepared. No physical Windows playback, decoder, SMTC,
+sleep/wake, restart, or evidence-ZIP result has run; tooling success does not
+satisfy PB-01 or PB-05.
 
 Do not record serial numbers, personal paths, account names, device names, or
 other personal identifiers in spike reports.

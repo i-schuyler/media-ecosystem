@@ -2,9 +2,9 @@
 
 ## Status
 
-Implementation plan for the combined Phase 1 Windows slice covering GitHub
-issues #4 and the Windows half of #5. Tooling and physical evidence are not yet
-complete.
+Tooling implementation plan for the combined Phase 1 Windows slice covering
+GitHub issues #4 and the Windows half of #5. The implementation is prepared for
+review; physical Surface Book 3 evidence is not yet complete.
 
 ## Questions
 

@@ -47,6 +47,17 @@ transition and safe relink evidence; issue #5 remains open for the exact
 six-format Windows matrix. Phase 1 is not complete, and no production
 technology stack has been selected.
 
+The disposable
+[Windows platform proof](spikes/windows-platform-proof/README.md) and its
+[evidence index](docs/spikes/phase-1/windows-platform-proof/README.md) prepare
+one pinned, self-contained .NET 8 `win-x64` diagnostic for issue #4 and the
+Windows half of issue #5. Its exact-six fixture verification, bounded PB-01
+runner, automatic MediaPlayer/SMTC lifecycle workflow, private restart
+checkpoint, sanitized seven-member evidence export, deterministic self-tests,
+and Windows CI are tooling only. No Surface Book 3 playback, codec, system
+control, sleep/wake, restart, or evidence-ZIP pass is claimed yet; issues #4
+and #5 remain open.
+
 ## License
 
 Media Ecosystem is licensed under the [Apache License 2.0](LICENSE).
