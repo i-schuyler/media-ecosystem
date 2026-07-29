@@ -43,6 +43,8 @@ jobs:
   tooling:
     name: Build disposable self-contained Windows proof
     runs-on: windows-latest
+    env:
+      PROOF_SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
     defaults:
       run:
@@ -116,18 +118,18 @@ jobs:
           dotnet publish src/WindowsProof.App/WindowsProof.App.csproj
           --configuration Release --runtime win-x64 --self-contained true
           --no-restore --output out/publish
-          /p:SourceCommit=${{ github.sha }}
+          /p:SourceCommit=$env:PROOF_SOURCE_COMMIT
 
       - name: Verify published fixtures, runtime, schema, and key absence
         shell: pwsh
         run: >-
           ./scripts/Verify-Publish.ps1 -PublishRoot out/publish
-          -ExpectedSourceCommit ${{ github.sha }}
+          -ExpectedSourceCommit $env:PROOF_SOURCE_COMMIT
 
       - name: Create and verify handoff artifact ZIP
         shell: pwsh
         run: |
-          $artifact = "out/disposable-windows-platform-proof-${{ github.sha }}.zip"
+          $artifact = "out/disposable-windows-platform-proof-$env:PROOF_SOURCE_COMMIT.zip"
           ./scripts/Package-Artifact.ps1 -PublishRoot out/publish -OutputZip $artifact
           $file = Get-Item -LiteralPath $artifact
           $hash = (Get-FileHash -LiteralPath $artifact -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -201,7 +203,7 @@ jobs:
       - name: Upload disposable proof artifact
         uses: actions/upload-artifact@v7
         with:
-          name: disposable-windows-platform-proof-${{ github.sha }}
+          name: disposable-windows-platform-proof-${{ env.PROOF_SOURCE_COMMIT }}
           path: ${{ env.WINDOWS_PROOF_ARTIFACT }}
           if-no-files-found: error
           retention-days: 14
