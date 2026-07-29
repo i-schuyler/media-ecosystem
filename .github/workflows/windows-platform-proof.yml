@@ -204,6 +204,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: disposable-windows-platform-proof-${{ env.PROOF_SOURCE_COMMIT }}
-          path: ${{ env.WINDOWS_PROOF_ARTIFACT }}
+          path: spikes/windows-platform-proof/${{ env.WINDOWS_PROOF_ARTIFACT }}
           if-no-files-found: error
           retention-days: 14
