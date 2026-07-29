@@ -57,6 +57,6 @@ finally {
 
 $file = Get-Item -LiteralPath $outputFullPath
 $sha256 = (Get-FileHash -LiteralPath $outputFullPath -Algorithm SHA256).Hash.ToLowerInvariant()
-Write-Host "Artifact: $($file.Name)"
-Write-Host "Bytes: $($file.Length)"
-Write-Host "SHA-256: $sha256"
+Write-Output "Artifact: $($file.Name)"
+Write-Output "Bytes: $($file.Length)"
+Write-Output "SHA-256: $sha256"

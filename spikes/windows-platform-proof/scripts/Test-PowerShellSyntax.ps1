@@ -28,8 +28,8 @@ if ($null -ne $analyzer) {
     if ($results.Count -ne 0) {
         $results | Format-Table -AutoSize | Out-String | Write-Error
     }
-    Write-Host 'PowerShell syntax and available PSScriptAnalyzer checks passed.'
+    Write-Output 'PowerShell syntax and available PSScriptAnalyzer checks passed.'
 }
 else {
-    Write-Host 'PowerShell syntax passed; PSScriptAnalyzer is not installed in this environment.'
+    Write-Output 'PowerShell syntax passed; PSScriptAnalyzer is not installed in this environment.'
 }

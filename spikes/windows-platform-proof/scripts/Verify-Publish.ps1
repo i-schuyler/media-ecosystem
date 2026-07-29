@@ -80,4 +80,4 @@ if (-not [string]::IsNullOrWhiteSpace($ExpectedSourceCommit) -and
     throw 'Published source commit marker does not match.'
 }
 
-Write-Host "Verified unpacked self-contained win-x64 publish at tooling scope only."
+Write-Output "Verified unpacked self-contained win-x64 publish at tooling scope only."

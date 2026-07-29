@@ -88,4 +88,4 @@ if ($totalBytes -gt 8000000 -or $sumByName.Count -ne 6) {
 }
 
 $manifestHash = (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
-Write-Host "Verified exact six synthetic fixtures ($totalBytes bytes); manifest SHA-256 $manifestHash."
+Write-Output "Verified exact six synthetic fixtures ($totalBytes bytes); manifest SHA-256 $manifestHash."
